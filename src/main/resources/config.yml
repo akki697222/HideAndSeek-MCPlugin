@@ -3,6 +3,9 @@
 # ピースフルだと鬼は素手でワンパンできるようになります。
 # messageはすべて表示されるメッセージです。好きなように変更してください。
 
+# コマンドのヘルプは単体で実行すれば閲覧できます
+# /hideandseekがメインコマンドです
+
 timer:
   # タイマーのデフォルト値
   default: 500
@@ -14,12 +17,12 @@ game:
   # ゲーム開始時の位置
   startPos:
     x: 0
-    y: -60
+    y: 0
     z: 0
   # ロビーの位置
   lobbyPos:
     x: 0
-    y: -60
+    y: 0
     z: 0
   # 体力
   health:
@@ -47,7 +50,7 @@ message:
       setDefault: "タイマーの設定時間がコンフィグのデフォルト(%s)に設定されました。"
       getCurrentSettings: "タイマーの設定時間は%s秒です。"
     hideandseek:
-      help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [number of seekers] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します"
+      help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [鬼の人数] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します"
       alreadyStarted: "§l§cゲームはすでに開始しています。"
       alreadyStopped: "§l§cゲームはすでに終了しています。"
       overlimit: "鬼の数をプレイヤー数以上にすることはできません。"
