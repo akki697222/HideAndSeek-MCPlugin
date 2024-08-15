@@ -1,0 +1,67 @@
+timer:
+  default: 500
+game:
+  countdown: 15
+  startPos:
+    x: 0
+    y: -60
+    z: 0
+  lobbyPos:
+    x: 0
+    y: -60
+    z: 0
+
+message:
+  command:
+    notfound: "コマンド %s の引数 %s は存在しません。"
+    timer:
+      help: "§l§aかくれんぼプラグイン - タイマーコマンド\n\n/timer start - タイマーをスタートします\n/timer stop - タイマーをストップします\n/timer pause - タイマーを一時停止します\n/timer set [整数] - タイマーの時間を設定します"
+      alreadyStarted: "§l§cタイマーはすでにスタートしています。"
+      start: "タイマーをスタートしました。"
+      alreadyStopped: "§l§cタイマーはすでにストップしています。"
+      stop: "タイマーがストップされました。"
+      pause:
+        1: "タイマーが一時停止されました。"
+        2: "タイマーが再開されました。"
+      setFailed: "§l§cタイマーの作動中は時間の変更はできません。"
+      set: "タイマーの設定時間が%s秒に設定されました。"
+      setDefault: "タイマーの設定時間がコンフィグのデフォルト(%s)に設定されました。"
+      getCurrentSettings: "タイマーの設定時間は%s秒です。"
+    hideandseek:
+      help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [number of seekers] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します"
+      alreadyStarted: "§l§cゲームはすでに開始しています。"
+      alreadyStopped: "§l§cゲームはすでに終了しています。"
+      overlimit: "鬼の数をプレイヤー数以上にすることはできません。"
+      setnumber: "値を指定してください。"
+      setSpawn: "スポーン位置をX %s, Y %s, Z %s に設定しました。"
+  game:
+    timeup: "タイムアップ！！"
+    title: "かくれんぼ"
+    timer: "タイマー - 残り%s秒"
+    start: "ゲーム開始！鬼から隠れろ！"
+    countdown: "開始まで残り%s秒"
+    startCountdown: "ゲームを開始します..."
+    hiderKilled: "%sは見つかってしまった！"
+    seekerKilled: "鬼の%sは%sの逆襲にあった！"
+    playerDeath: "%sは自殺した！"
+    forceEnd: "ゲームが管理者により強制終了されました。"
+    hiderWin: "Hiders Win!"
+    seekerWin: "Seekers Win!"
+    gameEnd: "ゲーム終了！！"
+    onepersonisenough: "の一人で十分だった。"
+    survived: "生存者"
+    survivedtimes: "は%s秒間鬼から隠れ続けた！"
+    killedplayers: "は%s人を見つけた！"
+    killedall: "は一人で全員を発見した。"
+  event:
+    join: "§l§eかくれんぼへようこそ、%sさん！"
+    leave: "§l§e%sさんが退出しました。"
+  plugin:
+    enable: "かくれんぼプラグインが有効化されました。"
+    disable: "かくれんぼプラグインが無効化されました。"
+  team:
+    hiderPrefix: "逃げ"
+    seekerPrefix: "鬼"
+    visitorPrefix: "ロビー"
+    deadPrefix: "死亡"
+    specPrefix: "観戦者"

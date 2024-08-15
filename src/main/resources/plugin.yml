@@ -1,0 +1,20 @@
+name: hideandseek
+version: '${project.version}'
+main: io.github.akki.hideandseek.HideandSeek
+api-version: '1.20'
+load: STARTUP
+authors: [akki697222]
+
+commands:
+  timer:
+    description: Timer Command
+    usage: /<command> [set|get|start|stop|pause] [time]
+  hideandseek:
+    description: Hide and Seek main Commands.
+    usage: /<command> [start|end]
+  seeker:
+    description: Seeker
+    usage: /<command> [add|remove]
+  hider:
+    description: Hider
+    usage: /<command> [add|remove]
