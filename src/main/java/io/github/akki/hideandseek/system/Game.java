@@ -55,7 +55,7 @@ public class Game {
                 if (team != null) {
                     team.removeEntry(player.getName());
                 }
-                player.setMaxHealth(10.0);
+                player.setMaxHealth(config.getDouble("game.health.hider"));
                 hider.addPlayer(player);
             }
         }
@@ -64,7 +64,7 @@ public class Game {
 
         for (int i = 0; i < seekers; i++) {
             Player randomPlayer = playerList.get(i);
-            randomPlayer.setMaxHealth(20.0);
+            randomPlayer.setMaxHealth(config.getDouble("game.health.seeker"));
             seeker.addPlayer(randomPlayer);
         }
 
@@ -98,6 +98,7 @@ public class Game {
         new GameCountdown().runTaskTimer(getPlugin(), 0L, 20L);
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
+            player.setBedSpawnLocation(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
             player.setGameMode(GameMode.ADVENTURE);
             player.getInventory().clear();
             if (isPlayersInTeam(player, "seeker")) {
@@ -210,7 +211,6 @@ public class Game {
             title = config.getString("message.game.gameEnd");
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.setStatistic(Statistic.PLAYER_KILLS, 0);
             player.sendTitle(ChatColor.GOLD + title, subTitle, 1, 20 * 3, 20);
         }
 
@@ -236,11 +236,11 @@ public class Game {
 
         List<String> scoreBoard = new ArrayList<>();
         if (team) {
-            if (finalPlayer != null) {
+            if (finalPlayer != null && hiders == 1) {
                 scoreBoard.add(ChatColor.GREEN + "- Hiders MVP -");
                 scoreBoard.add(finalPlayer.getName() + config.getString("message.game.onepersonisenough"));
             } else {
-                scoreBoard.add(config.getString("message.game.survived"));
+                scoreBoard.add(ChatColor.GREEN + config.getString("message.game.survived"));
                 for (Player player : surivedHiders) {
                     scoreBoard.add(player.getName());
                 }
@@ -301,6 +301,7 @@ public class Game {
             visitor.addPlayer(player);
             player.getInventory().clear();
             player.setGameMode(GameMode.ADVENTURE);
+            player.setStatistic(Statistic.PLAYER_KILLS, 0);
             player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
         }
     }

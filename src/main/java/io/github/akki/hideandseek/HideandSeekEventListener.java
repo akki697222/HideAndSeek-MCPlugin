@@ -32,11 +32,6 @@ public class HideandSeekEventListener implements Listener {
         Player player = playerDeathEvent.getPlayer();
         Player killer = player.getKiller();
 
-        Team team = scoreboard.getEntryTeam(player.getName());
-        if (team != null) {
-            team.removeEntry(player.getName());
-        }
-
         if (killer == null) {
             Bukkit.broadcastMessage(String.format(config.getString("message.game.playerDeath"), player.getName()));
         } else {
@@ -45,6 +40,11 @@ public class HideandSeekEventListener implements Listener {
             } else if (isPlayersInTeam(player, "hider")) {
                 Bukkit.broadcastMessage(String.format(config.getString("message.game.hiderKilled"), player.getName()));
             }
+        }
+
+        Team team = scoreboard.getEntryTeam(player.getName());
+        if (team != null) {
+            team.removeEntry(player.getName());
         }
 
         dead.addPlayer(player);

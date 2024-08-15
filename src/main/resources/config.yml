@@ -1,17 +1,33 @@
+# Hide and Seek Config
+# 鬼の難易度はマイクラの難易度と共通しています。
+# ピースフルだと鬼は素手でワンパンできるようになります。
+# messageはすべて表示されるメッセージです。好きなように変更してください。
+
 timer:
+  # タイマーのデフォルト値
   default: 500
 game:
+  # カウントダウン秒数
   countdown: 15
+  # 残り何秒で発光を付与するか
+  glow: 30
+  # ゲーム開始時の位置
   startPos:
     x: 0
     y: -60
     z: 0
+  # ロビーの位置
   lobbyPos:
     x: 0
     y: -60
     z: 0
+  # 体力
+  health:
+    seeker: 20.0
+    hider: 10.0
 
 item:
+  # アイテムの有効/無効化
   flash: enable
 
 message:
@@ -36,11 +52,11 @@ message:
       alreadyStopped: "§l§cゲームはすでに終了しています。"
       overlimit: "鬼の数をプレイヤー数以上にすることはできません。"
       setnumber: "値を指定してください。"
-      setSpawn: "スポーン位置をX %s, Y %s, Z %s に設定しました。"
+      setSpawn: "スポーン位置をX: %s, Y: %s, Z: %s に設定しました。"
   game:
     timeup: "タイムアップ！！"
     title: "かくれんぼ"
-    timer: "タイマー - 残り%s秒"
+    timer: "残り時間 : あと%s秒"
     start: "ゲーム開始！鬼から隠れろ！"
     countdown: "開始まで残り%s秒"
     startCountdown: "ゲームを開始します..."
