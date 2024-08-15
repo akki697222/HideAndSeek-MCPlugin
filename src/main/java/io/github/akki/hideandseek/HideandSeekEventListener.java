@@ -2,6 +2,7 @@ package io.github.akki.hideandseek;
 
 import io.github.akki.hideandseek.system.Game;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,6 +18,7 @@ public class HideandSeekEventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
         playerJoinEvent.setJoinMessage(String.format(config.getString("message.event.join"), playerJoinEvent.getPlayer().getName()));
+        playerJoinEvent.getPlayer().getInventory().clear();
         Game.initPlayer(playerJoinEvent.getPlayer());
     }
 
@@ -35,8 +37,6 @@ public class HideandSeekEventListener implements Listener {
             team.removeEntry(player.getName());
         }
 
-        dead.addPlayer(player);
-
         if (killer == null) {
             Bukkit.broadcastMessage(String.format(config.getString("message.game.playerDeath"), player.getName()));
         } else {
@@ -46,5 +46,8 @@ public class HideandSeekEventListener implements Listener {
                 Bukkit.broadcastMessage(String.format(config.getString("message.game.hiderKilled"), player.getName()));
             }
         }
+
+        dead.addPlayer(player);
+        player.setGameMode(GameMode.SPECTATOR);
     }
 }

@@ -35,7 +35,6 @@ public final class HideandSeek extends JavaPlugin {
     public static Team dead;
     public static Team spectator;
 
-
     public static Scoreboard scoreboard;
 
     @Override
@@ -123,5 +122,9 @@ public final class HideandSeek extends JavaPlugin {
 
     public static Plugin getPlugin() {
         return hideandseekPlugin;
+    }
+
+    public void saveAndReloadConfig() {
+        saveConfig();
     }
 }

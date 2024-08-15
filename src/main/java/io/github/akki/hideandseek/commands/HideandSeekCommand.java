@@ -1,5 +1,6 @@
 package io.github.akki.hideandseek.commands;
 
+import io.github.akki.hideandseek.HideandSeek;
 import io.github.akki.hideandseek.system.Game;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -11,8 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.text.PlainDocument;
 import java.util.Objects;
 
-import static io.github.akki.hideandseek.HideandSeek.config;
-import static io.github.akki.hideandseek.HideandSeek.logger;
+import static io.github.akki.hideandseek.HideandSeek.*;
 import static io.github.akki.hideandseek.system.Game.*;
 
 public class HideandSeekCommand implements CommandExecutor {
@@ -55,12 +55,16 @@ public class HideandSeekCommand implements CommandExecutor {
                         config.set("game.startPos.y", Math.floor(currentLocation.getY()));
                         config.set("game.startPos.z", Math.floor(currentLocation.getZ()));
                         sender.sendMessage(String.format(config.getString("message.command.hideandseek.setSpawn"), currentLocation.getX(), currentLocation.getY(), currentLocation.getZ()));
+                        hideandseekPlugin.saveConfig();
+                        hideandseekPlugin.reloadConfig();
                     } else if (Objects.equals(args[1], "lobby")) {
                         Location currentLocation = ((Player) sender).getLocation();
                         config.set("game.lobbyPos.x", Math.floor(currentLocation.getX()));
                         config.set("game.lobbyPos.y", Math.floor(currentLocation.getY()));
                         config.set("game.lobbyPos.z", Math.floor(currentLocation.getZ()));
                         sender.sendMessage(String.format(config.getString("message.command.hideandseek.setSpawn"), currentLocation.getX(), currentLocation.getY(), currentLocation.getZ()));
+                        hideandseekPlugin.saveConfig();
+                        hideandseekPlugin.reloadConfig();
                     }
                 } else {
                     sender.sendMessage("サーバー側では実行できないコマンドです。");

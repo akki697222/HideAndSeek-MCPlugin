@@ -15,9 +15,9 @@ public class GameTimerUpdater extends BukkitRunnable {
     @Override
     public void run() {
         if (timer.getCurrentTime() <= 0) {
-            stopTimer();
             if (!timer.getStopped()) {
                 endGame(true, true, false);
+                stopTimer();
             }
             return;
         }

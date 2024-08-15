@@ -18,10 +18,5 @@ public class GameTick extends BukkitRunnable {
             endGame(false, true, false);
             cancel();
         }
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (isPlayersInTeam(player, "dead")) {
-                player.setGameMode(GameMode.SPECTATOR);
-            }
-        }
     }
 }

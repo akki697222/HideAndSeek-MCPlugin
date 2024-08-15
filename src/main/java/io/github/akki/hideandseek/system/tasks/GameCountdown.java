@@ -8,8 +8,10 @@ public class GameCountdown extends BukkitRunnable {
     @Override
     public void run() {
         if (countdown <= 0) {
-            startGame();
-            cancel();
+            if (!isGameStarted) {
+                startGame();
+                cancel();
+            }
         } else {
             countdownTick();
             countdown--;

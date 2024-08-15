@@ -11,6 +11,9 @@ game:
     y: -60
     z: 0
 
+item:
+  flash: enable
+
 message:
   command:
     notfound: "コマンド %s の引数 %s は存在しません。"
