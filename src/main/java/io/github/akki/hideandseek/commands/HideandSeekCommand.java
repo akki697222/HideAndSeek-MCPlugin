@@ -2,6 +2,8 @@ package io.github.akki.hideandseek.commands;
 
 import io.github.akki.hideandseek.HideandSeek;
 import io.github.akki.hideandseek.system.Game;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,7 +26,7 @@ public class HideandSeekCommand implements CommandExecutor {
             return true;
         }
         if (Objects.equals(args[0], "start")) {
-            if (isGameStarted) {
+            if (isGameStarted || isCountdown) {
                 sender.sendMessage(config.getString("message.command.hideandseek.alreadyStarted"));
             } else {
                 if (Objects.equals(args[1], "custom")) {
@@ -78,6 +80,15 @@ public class HideandSeekCommand implements CommandExecutor {
             } else {
                 sender.sendMessage(config.getString("message.command.hideandseek.setnumber"));
             }
+        } else if (Objects.equals(args[1], "settings")) {
+            sender.sendMessage(ChatColor.BOLD + config.getString("message.command.hideandseek.settings.title"));
+            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.players"), Bukkit.getOnlinePlayers().size()));
+            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.hiders"), getNextHider().size()));
+            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.seekers"), getNextSeeker().size()));
+            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.spectates"), getNextSpectator().size()));
+            sender.sendMessage(config.getString("message.command.hideandseek.settings.items"));
+            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.item.flash"), config.getString("item.flash")));
+            sender.sendMessage(config.getString("message.command.hideandseek.settings.time"));
         }
         return true;
     }

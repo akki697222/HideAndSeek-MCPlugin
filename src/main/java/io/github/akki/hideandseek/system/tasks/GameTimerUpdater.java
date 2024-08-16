@@ -9,8 +9,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
 import static io.github.akki.hideandseek.system.Game.*;
+import static io.github.akki.hideandseek.system.GameEvent.randomEvent;
 
 public class GameTimerUpdater extends BukkitRunnable {
+    public static int eventTimer = 0;
 
     public GameTimerUpdater() {
         timer.setCurrentTime(timer.getDefaultTime());
@@ -36,6 +38,13 @@ public class GameTimerUpdater extends BukkitRunnable {
 
         if (!timer.getPaused() && timer.getStarted()) {
             timer.setCurrentTime(timer.getCurrentTime() - 1);
+        }
+
+        if (eventTimer >= config.getInt("game.event")) {
+            eventTimer = 0;
+            randomEvent();
+        } else if (!timer.getPaused() && timer.getStarted()){
+            eventTimer++;
         }
 
         updateBossBarTimer(timer.getCurrentTime(), timer.getDefaultTime());

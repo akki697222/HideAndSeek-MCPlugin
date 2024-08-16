@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Team;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
+import static io.github.akki.hideandseek.system.Game.isGameStarted;
 import static io.github.akki.hideandseek.system.Game.isPlayersInTeam;
 
 public class HideandSeekEventListener implements Listener {
@@ -42,12 +43,24 @@ public class HideandSeekEventListener implements Listener {
             }
         }
 
-        Team team = scoreboard.getEntryTeam(player.getName());
-        if (team != null) {
-            team.removeEntry(player.getName());
-        }
+        if (isGameStarted) {
+            if (!isPlayersInTeam(player, "seeker")) {
+                Team team = scoreboard.getEntryTeam(player.getName());
+                if (team != null) {
+                    team.removeEntry(player.getName());
+                }
 
-        dead.addPlayer(player);
-        player.setGameMode(GameMode.SPECTATOR);
+                dead.addPlayer(player);
+                player.setGameMode(GameMode.SPECTATOR);
+            } else if (isPlayersInTeam(player, "seeker") && killer != null) {
+                Team team = scoreboard.getEntryTeam(player.getName());
+                if (team != null) {
+                    team.removeEntry(player.getName());
+                }
+
+                dead.addPlayer(player);
+                player.setGameMode(GameMode.SPECTATOR);
+            }
+        }
     }
 }

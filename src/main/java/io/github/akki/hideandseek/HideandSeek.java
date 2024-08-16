@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 
 public final class HideandSeek extends JavaPlugin {
     public static Plugin hideandseekPlugin;
-    public static final Logger logger = Logger.getLogger("Hide'n'seek");
+    public static final Logger logger = Logger.getLogger("Hideandseek");
     public static GameTimer timer;
     public static FileConfiguration config;
 

@@ -24,7 +24,7 @@ public class SpectateCommand implements CommandExecutor {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getName().equals(args[1])) {
                         Game.addNextSpectator(player);
-                        break;
+                        return true;
                     }
                 }
                 sender.sendMessage(config.getString("message.command.spectate.playernotfound"));
@@ -34,7 +34,7 @@ public class SpectateCommand implements CommandExecutor {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getName().equals(args[1])) {
                         Game.removeNextSpectator(player);
-                        break;
+                        return true;
                     }
                 }
                 sender.sendMessage(config.getString("message.command.spectate.playernotfound"));

@@ -24,7 +24,7 @@ public class SeekerCommand implements CommandExecutor {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getName().equals(args[1])) {
                         Game.addNextSeeker(player);
-                        break;
+                        return true;
                     }
                 }
                 sender.sendMessage(config.getString("message.command.seeker.playernotfound"));
@@ -34,7 +34,7 @@ public class SeekerCommand implements CommandExecutor {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getName().equals(args[1])) {
                         Game.removeNextSeeker(player);
-                        break;
+                        return true;
                     }
                 }
                 sender.sendMessage(config.getString("message.command.seeker.playernotfound"));

@@ -29,6 +29,11 @@ public class Game {
     public static List<Player> nextSeeker = new ArrayList<>();
     public static List<Player> nextSpectator = new ArrayList<>();
 
+    public static boolean isCountdown = false;
+
+    private static int hiders = 0;
+    private static int finalHiders = 0;
+
     public static void addNextHider(Player player) {
         removeNextSeeker(player);
         removeNextSpectator(player);
@@ -128,6 +133,7 @@ public class Game {
                 joinedTeam.removeEntry(player.getName());
             }
 
+            player.setMaxHealth(config.getDouble("game.health.hider"));
             hider.addPlayer(player);
         }
 
@@ -137,6 +143,7 @@ public class Game {
                 joinedTeam.removeEntry(player.getName());
             }
 
+            player.setMaxHealth(config.getDouble("game.health.seeker"));
             seeker.addPlayer(player);
         }
 
@@ -146,11 +153,17 @@ public class Game {
                 joinedTeam.removeEntry(player.getName());
             }
 
+            player.setGameMode(GameMode.SPECTATOR);
             spectator.addPlayer(player);
         }
+
+        nextHider = new ArrayList<>();
+        nextSeeker = new ArrayList<>();
+        nextSpectator = new ArrayList<>();
     }
 
     public static void startCountdown() {
+        isCountdown = true;
         countdown = config.getInt("game.countdown");
         Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.startCountdown"));
         mainBossBar.setVisible(false);
@@ -160,7 +173,9 @@ public class Game {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
             player.setBedSpawnLocation(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
-            player.setGameMode(GameMode.ADVENTURE);
+            if (!isPlayersInTeam(player, "spectator")) {
+                player.setGameMode(GameMode.ADVENTURE);
+            }
             player.getInventory().clear();
             if (isPlayersInTeam(player, "seeker")) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 15, 255));
@@ -168,12 +183,14 @@ public class Game {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 20 * 15, 238));
             } else if (isPlayersInTeam(player, "hider")) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 15, 3));
+                hiders++;
             }
         }
     }
 
     public static void startGame() {
         isGameStarted = true;
+        isCountdown = false;
         Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.start"));
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 3.0f, 1.0f);
@@ -258,11 +275,7 @@ public class Game {
 
     public static boolean isPlayersInTeam(Player player, String name) {
         Team playerTeam = scoreboard.getEntryTeam(player.getName());
-        if (playerTeam != null && playerTeam.getName().equalsIgnoreCase(name)) {
-            return true;
-        }
-
-        return false;
+        return playerTeam != null && playerTeam.getName().equalsIgnoreCase(name);
     }
 
     private static void teamProcess(boolean team, boolean timeUp, int endedTime) { //Hider true Seeker false
@@ -284,7 +297,6 @@ public class Game {
 
         Player topKiller = null;
         int maxKills = -1;
-        int hiders = 0;
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (isPlayersInTeam(player, "seeker")) {
@@ -293,12 +305,6 @@ public class Game {
                     maxKills = kills;
                     topKiller = player;
                 }
-            }
-        }
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (isPlayersInTeam(player, "hider")) {
-                hiders++;
             }
         }
 
@@ -351,16 +357,13 @@ public class Game {
         }
         if (isForceEnded) {
             Bukkit.broadcastMessage(config.getString("message.game.forceEnd"));
-        } else if (isTimedUp) {
-            teamProcess(winnedTeams, true, timer.getDefaultTime() - time);
-        } else {
-            teamProcess(winnedTeams, false, timer.getDefaultTime() - time);
-        }
+        } else teamProcess(winnedTeams, isTimedUp, timer.getDefaultTime() - time);
 
         Bukkit.getScheduler().runTaskLater(getPlugin(), Game::lobbyProcess, 20 * 5);
     }
 
     public static void lobbyProcess() {
+        hiders = 0;
         for (Player player : Bukkit.getOnlinePlayers()) {
             Team joinedTeam = scoreboard.getEntryTeam(player.getName());
             if (joinedTeam != null) {
@@ -385,14 +388,11 @@ public class Game {
                 hiderCount++;
             }
         }
-        if (hiderCount == 1 && processedPlayer != null) {
+        finalHiders = hiderCount;
+        if (hiderCount == 1) {
             finalPlayer = processedPlayer;
         }
-        if (hiderCount == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return hiderCount != 0;
     }
 
     public static boolean checkSeekers() {
@@ -402,11 +402,7 @@ public class Game {
                 seekerCount++;
             }
         }
-        if (seekerCount == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return seekerCount != 0;
     }
 
     public static void countdownTick() {

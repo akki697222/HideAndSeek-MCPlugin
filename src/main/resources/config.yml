@@ -10,6 +10,8 @@ timer:
   # タイマーのデフォルト値
   default: 500
 game:
+  # イベントの周期
+  event: 30
   # カウントダウン秒数
   countdown: 15
   # 残り何秒で発光を付与するか
@@ -50,13 +52,26 @@ message:
       setDefault: "タイマーの設定時間がコンフィグのデフォルト(%s)に設定されました。"
       getCurrentSettings: "タイマーの設定時間は%s秒です。"
     hideandseek:
-      help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [鬼の人数] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します"
+      help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [鬼の人数] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します\n/hideandseek settings - 現在の設定を表示します"
       alreadyStarted: "§l§cゲームはすでに開始しています。"
       alreadyStopped: "§l§cゲームはすでに終了しています。"
       overlimit: "鬼の数をプレイヤー数以上にすることはできません。"
       setnumber: "値を指定してください。"
       setSpawn: "スポーン位置をX: %s, Y: %s, Z: %s に設定しました。"
       failedcustom: "HiderまたはSeekerはそれぞれ最低1人以上必要です。"
+      settings:
+        title: "- 現在の設定 -\n\n"
+        players: "現在の人数: %s"
+        hiders: "現在の設定済みの逃げの人数: %s"
+        seekers: "現在の設定済みの鬼の人数: %s"
+        spectates: "現在の設定済みの観戦者数: %s"
+        items: "\n- 現在の特殊アイテムの状態 -\n\n"
+        item:
+          flash: "フラッシュ: %s"
+        time: "\n- 時間設定 -"
+        times:
+          event: "現在のイベント"
+
     hider:
       help: "§l§aかくれんぼプラグイン - Hiderコマンド\n\n/hider add [プレイヤー] - プレイヤーをhiderに追加します\n/hider remove - プレイヤーをhiderから削除します"
       playernotfound: "プレイヤーが見つかりませんでした。"
@@ -97,3 +112,7 @@ message:
     visitorPrefix: "ロビー"
     deadPrefix: "死亡"
     specPrefix: "観戦者"
+  gameevent:
+    speedup: "イベント: スピードアップ - 逃げの足が15秒間早くなります。"
+    jumpboost: "イベント: 跳躍力 - 全員のジャンプ力が15秒間上昇します。"
+    glowall: "イベント: Glowing All - 全員が10秒間発光します。"

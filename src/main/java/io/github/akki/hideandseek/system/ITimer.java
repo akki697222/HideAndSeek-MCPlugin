@@ -1,15 +1,15 @@
 package io.github.akki.hideandseek.system;
 
 public interface ITimer {
-    public int getCurrentTime();
-    public void setCurrentTime(int time);
-    public int getDefaultTime();
-    public void setDefaultTime(int time);
-    public boolean getPaused();
-    public boolean getStarted();
-    public boolean getStopped();
-    public void startTimer();
-    public void stopTimer();
-    public void pauseTimer();
-    public void resetTimer();
+    int getCurrentTime();
+    void setCurrentTime(int time);
+    int getDefaultTime();
+    void setDefaultTime(int time);
+    boolean getPaused();
+    boolean getStarted();
+    boolean getStopped();
+    void startTimer();
+    void stopTimer();
+    void pauseTimer();
+    void resetTimer();
 }
