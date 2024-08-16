@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.text.PlainDocument;
+import java.util.List;
 import java.util.Objects;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
@@ -18,10 +19,6 @@ import static io.github.akki.hideandseek.system.Game.*;
 public class HideandSeekCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        for (String arg : args) {
-            logger.info(arg);
-        }
-        logger.info(String.valueOf(isGameStarted));
         if (args.length == 0) {
             sender.sendMessage(config.getString("message.command.hideandseek.help"));
             return true;
@@ -30,14 +27,23 @@ public class HideandSeekCommand implements CommandExecutor {
             if (isGameStarted) {
                 sender.sendMessage(config.getString("message.command.hideandseek.alreadyStarted"));
             } else {
-                if (args.length >= 2) {
+                if (Objects.equals(args[1], "custom")) {
+                    List<Player> hiderList = getNextHider();
+                    List<Player> seekerList = getNextSeeker();
+
+                    if (hiderList.isEmpty() || seekerList.isEmpty()) {
+                        sender.sendMessage(config.getString("message.command.hideandseek.failedcustom"));
+                        return true;
+                    } else {
+                        Game.customGame();
+                        Game.startCountdown();
+                    }
+                } else {
                     if (randomizeTeams(Integer.parseInt(args[1]))) {
                         Game.startCountdown();
                     } else {
                         sender.sendMessage(config.getString("message.command.hideandseek.overlimit"));
                     }
-                } else {
-                    sender.sendMessage(config.getString("message.command.hideandseek.setnumber"));
                 }
             }
         } else if (Objects.equals(args[0], "stop")) {

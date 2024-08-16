@@ -1,7 +1,6 @@
 package io.github.akki.hideandseek;
 
-import io.github.akki.hideandseek.commands.HideandSeekCommand;
-import io.github.akki.hideandseek.commands.TimerCommand;
+import io.github.akki.hideandseek.commands.*;
 import io.github.akki.hideandseek.system.Game;
 import io.github.akki.hideandseek.system.GameTimer;
 import io.github.akki.hideandseek.system.tasks.GameTimerUpdater;
@@ -21,7 +20,7 @@ import java.util.logging.Logger;
 
 public final class HideandSeek extends JavaPlugin {
     public static Plugin hideandseekPlugin;
-    public static final Logger logger = Logger.getLogger("Hide and seek");
+    public static final Logger logger = Logger.getLogger("Hide'n'seek");
     public static GameTimer timer;
     public static FileConfiguration config;
 
@@ -110,6 +109,9 @@ public final class HideandSeek extends JavaPlugin {
 
         this.getCommand("timer").setExecutor(new TimerCommand());
         this.getCommand("hideandseek").setExecutor(new HideandSeekCommand());
+        this.getCommand("hider").setExecutor(new HiderCommand());
+        this.getCommand("seeker").setExecutor(new SeekerCommand());
+        this.getCommand("spectate").setExecutor(new SpectateCommand());
 
         Game.setBossBarDefault();
         Game.setBossBarTimer();
@@ -122,9 +124,5 @@ public final class HideandSeek extends JavaPlugin {
 
     public static Plugin getPlugin() {
         return hideandseekPlugin;
-    }
-
-    public void saveAndReloadConfig() {
-        saveConfig();
     }
 }

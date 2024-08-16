@@ -2,7 +2,6 @@ package io.github.akki.hideandseek.system;
 
 import io.github.akki.hideandseek.system.tasks.GameCountdown;
 import io.github.akki.hideandseek.system.tasks.GameTick;
-import io.github.akki.hideandseek.system.tasks.GameTimerUpdater;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
@@ -18,7 +17,6 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
-import static org.bukkit.Bukkit.getServer;
 
 public class Game {
     public static int countdown = config.getInt("game.countdown");
@@ -27,16 +25,50 @@ public class Game {
     public static Player finalPlayer;
     public static List<Player> surivedHiders = new ArrayList<>();
 
-    public static void notifyTimerStoped() {
+    public static List<Player> nextHider = new ArrayList<>();
+    public static List<Player> nextSeeker = new ArrayList<>();
+    public static List<Player> nextSpectator = new ArrayList<>();
 
+    public static void addNextHider(Player player) {
+        removeNextSeeker(player);
+        removeNextSpectator(player);
+        nextHider.add(player);
     }
 
-    public static void notifyTimerStarted() {
-
+    public static void addNextSeeker(Player player) {
+        removeNextHider(player);
+        removeNextSpectator(player);
+        nextSeeker.add(player);
     }
 
-    public static void notifyTimerPaused() {
+    public static void addNextSpectator(Player player) {
+        removeNextSeeker(player);
+        removeNextHider(player);
+        nextSpectator.add(player);
+    }
 
+    public static void removeNextHider(Player player) {
+        nextHider.remove(player);
+    }
+
+    public static void removeNextSeeker(Player player) {
+        nextSeeker.remove(player);
+    }
+
+    public static void removeNextSpectator(Player player) {
+        nextSpectator.remove(player);
+    }
+
+    public static List<Player> getNextHider() {
+        return nextHider;
+    }
+
+    public static List<Player> getNextSeeker() {
+        return nextSeeker;
+    }
+
+    public static List<Player> getNextSpectator() {
+        return nextSpectator;
     }
 
     public static boolean randomizeTeams(int seekers) {
@@ -89,6 +121,35 @@ public class Game {
         setBossBarDefault();
     }
 
+    public static void customGame() {
+        for (Player player : nextHider) {
+            Team joinedTeam = scoreboard.getEntryTeam(player.getName());
+            if (joinedTeam != null) {
+                joinedTeam.removeEntry(player.getName());
+            }
+
+            hider.addPlayer(player);
+        }
+
+        for (Player player : nextSeeker) {
+            Team joinedTeam = scoreboard.getEntryTeam(player.getName());
+            if (joinedTeam != null) {
+                joinedTeam.removeEntry(player.getName());
+            }
+
+            seeker.addPlayer(player);
+        }
+
+        for (Player player : nextSpectator) {
+            Team joinedTeam = scoreboard.getEntryTeam(player.getName());
+            if (joinedTeam != null) {
+                joinedTeam.removeEntry(player.getName());
+            }
+
+            spectator.addPlayer(player);
+        }
+    }
+
     public static void startCountdown() {
         countdown = config.getInt("game.countdown");
         Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.startCountdown"));
@@ -133,6 +194,7 @@ public class Game {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * timer.getDefaultTime(), 255));
                     player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
                 }
+                break;
             }
             case EASY: {
                 if (isPlayersInTeam(player, "seeker")) {
@@ -142,6 +204,7 @@ public class Game {
                 } else if ((isPlayersInTeam(player, "hider"))) {
                     player.getInventory().addItem(new ItemStack(Material.BREAD, 64));
                 }
+                break;
             }
             case NORMAL: {
                 if (isPlayersInTeam(player, "seeker")) {
@@ -152,6 +215,7 @@ public class Game {
                 } else if ((isPlayersInTeam(player, "hider"))) {
                     player.getInventory().addItem(new ItemStack(Material.BREAD, 16));
                 }
+                break;
             }
             case HARD: {
                 if (isPlayersInTeam(player, "seeker")) {
@@ -166,8 +230,12 @@ public class Game {
                     player.getInventory().addItem(new ItemStack(Material.WOODEN_SWORD, 1));
                     player.getInventory().addItem(new ItemStack(Material.BREAD, 8));
                 }
+                break;
             }
+            default:
+                break;
         }
+
         if (Objects.equals(config.getString("item.flash"), "enable")) {
             ItemStack potionItem = new ItemStack(Material.SPLASH_POTION);
             PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
