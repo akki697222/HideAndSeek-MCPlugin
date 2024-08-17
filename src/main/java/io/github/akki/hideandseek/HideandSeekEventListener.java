@@ -4,8 +4,10 @@ import io.github.akki.hideandseek.system.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -61,6 +63,13 @@ public class HideandSeekEventListener implements Listener {
                 dead.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
             }
+        }
+    }
+
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        if (event.getEntity() instanceof TNTPrimed) {
+            event.blockList().clear();
         }
     }
 }

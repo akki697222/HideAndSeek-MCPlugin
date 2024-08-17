@@ -1,4 +1,4 @@
-name: hideandseek
+name: Hide-and-Seek
 version: '${project.version}'
 main: io.github.akki.hideandseek.HideandSeek
 api-version: '1.20'
@@ -21,3 +21,9 @@ commands:
   spectate:
     description: Spectate
     usage: /<command> [add|remove]
+  map:
+    description: Map
+    usage: /<command> [add] [name] [title]
+  eventtester:
+    description: For event testing
+    usage: /<command> [eventName(Enum GameEvent.Events)]

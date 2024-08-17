@@ -1,11 +1,14 @@
 package io.github.akki.hideandseek.system;
 
+import io.github.akki.hideandseek.system.mapsystem.MapManager;
 import io.github.akki.hideandseek.system.tasks.GameCountdown;
 import io.github.akki.hideandseek.system.tasks.GameTick;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,6 +28,9 @@ public class Game {
     public static Player finalPlayer;
     public static List<Player> surivedHiders = new ArrayList<>();
 
+    public static ItemStack flashPotion;
+    public static ItemStack demonStick;
+
     public static List<Player> nextHider = new ArrayList<>();
     public static List<Player> nextSeeker = new ArrayList<>();
     public static List<Player> nextSpectator = new ArrayList<>();
@@ -32,7 +38,29 @@ public class Game {
     public static boolean isCountdown = false;
 
     private static int hiders = 0;
-    private static int finalHiders = 0;
+
+    public static void initItem() {
+        flashPotion = new ItemStack(Material.SPLASH_POTION, 1);
+        PotionMeta potionMeta = (PotionMeta) flashPotion.getItemMeta();
+
+        if (potionMeta != null) {
+            potionMeta.setDisplayName("フラッシュポーション");
+            potionMeta.setColor(Color.WHITE);
+            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 255), true);
+            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 2), true);
+            flashPotion.setItemMeta(potionMeta);
+        }
+
+        demonStick = new ItemStack(Material.STICK, 1);
+
+        ItemMeta meta = demonStick.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§a鬼の金棒");
+            demonStick.setItemMeta(meta);
+        }
+
+        demonStick.addUnsafeEnchantment(Enchantment.KNOCKBACK, 10);
+    }
 
     public static void addNextHider(Player player) {
         removeNextSeeker(player);
@@ -82,7 +110,7 @@ public class Game {
         Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
         List<Player> playerList = new ArrayList<>(onlinePlayers);
 
-        if (seekers >= playerList.size()) {
+        if (seekers >= playerList.size() || seekers < 1) {
             return false;
         }
 
@@ -163,16 +191,25 @@ public class Game {
     }
 
     public static void startCountdown() {
+        Map<String, Object> map = MapManager.selectRandomMap();
+        if (map == null) {
+            throw(new NullPointerException("Invalid Map: Returned map is null."));
+        }
         isCountdown = true;
         countdown = config.getInt("game.countdown");
         Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.startCountdown"));
+        Bukkit.broadcastMessage(ChatColor.GOLD + String.format(config.getString("message.game.selectedMap"), map.get("title")));
         mainBossBar.setVisible(false);
         countdownBossBar.setVisible(true);
         timerBossBar.setVisible(false);
         new GameCountdown().runTaskTimer(getPlugin(), 0L, 20L);
+
+        int x = (int) map.get("x");
+        int y = (int) map.get("y");
+        int z = (int) map.get("z");
+
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
-            player.setBedSpawnLocation(new Location(Bukkit.getWorld("world"), config.getInt("game.startPos.x"), config.getInt("game.startPos.y"), config.getInt("game.startPos.z")));
+            player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
             if (!isPlayersInTeam(player, "spectator")) {
                 player.setGameMode(GameMode.ADVENTURE);
             }
@@ -254,18 +291,7 @@ public class Game {
         }
 
         if (Objects.equals(config.getString("item.flash"), "enable")) {
-            ItemStack potionItem = new ItemStack(Material.SPLASH_POTION);
-            PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
-
-            if (potionMeta != null) {
-                potionMeta.setDisplayName("フラッシュポーション");
-                potionMeta.setColor(Color.WHITE);
-                potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 255), true);
-                potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 2), true);
-                potionItem.setItemMeta(potionMeta);
-            }
-
-            player.getInventory().addItem(potionItem);
+            player.getInventory().addItem(flashPotion);
         }
     }
 
@@ -364,6 +390,7 @@ public class Game {
 
     public static void lobbyProcess() {
         hiders = 0;
+        isFinal = false;
         for (Player player : Bukkit.getOnlinePlayers()) {
             Team joinedTeam = scoreboard.getEntryTeam(player.getName());
             if (joinedTeam != null) {
@@ -374,6 +401,37 @@ public class Game {
             player.setGameMode(GameMode.ADVENTURE);
             player.setStatistic(Statistic.PLAYER_KILLS, 0);
             player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
+        }
+    }
+
+    public static boolean isFinal = false;
+
+    public static void finalItem(int hiderCount) {
+        if (isFinal) {
+            return;
+        }
+        isFinal = true;
+        Bukkit.broadcastMessage(config.getString("message.game.finalPlayer"));
+        finalPlayer.getInventory().addItem(new ItemStack(Material.IRON_SWORD, 1));
+        switch (Bukkit.getWorld("world").getDifficulty()) {
+            case EASY: {
+                finalPlayer.getInventory().addItem(flashPotion);
+                break;
+            }
+            case NORMAL: {
+                finalPlayer.getInventory().addItem(flashPotion);
+                finalPlayer.getInventory().addItem(demonStick);
+                break;
+            }
+            case HARD: {
+                finalPlayer.getInventory().addItem(flashPotion);
+                finalPlayer.getInventory().addItem(flashPotion);
+                finalPlayer.getInventory().addItem(demonStick);
+                finalPlayer.getInventory().addItem(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -388,9 +446,9 @@ public class Game {
                 hiderCount++;
             }
         }
-        finalHiders = hiderCount;
         if (hiderCount == 1) {
             finalPlayer = processedPlayer;
+            finalItem(hiderCount);
         }
         return hiderCount != 0;
     }
@@ -458,12 +516,18 @@ public class Game {
         timerBossBar.addPlayer(player);
         countdownBossBar.addPlayer(player);
         if (isGameStarted) {
-            spectator.addPlayer(player);
-            player.setGameMode(GameMode.SPECTATOR);
+            if (isPlayersInTeam(player, "seeker")) {
+                seeker.addPlayer(player);
+                player.setGameMode(GameMode.ADVENTURE);
+            } else {
+                spectator.addPlayer(player);
+                player.setGameMode(GameMode.SPECTATOR);
+                player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
+            }
         } else {
             visitor.addPlayer(player);
             player.setGameMode(GameMode.ADVENTURE);
+            player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
         }
-        player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
     }
 }

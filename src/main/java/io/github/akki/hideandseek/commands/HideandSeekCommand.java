@@ -2,6 +2,7 @@ package io.github.akki.hideandseek.commands;
 
 import io.github.akki.hideandseek.HideandSeek;
 import io.github.akki.hideandseek.system.Game;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -9,9 +10,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.text.PlainDocument;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,23 +30,34 @@ public class HideandSeekCommand implements CommandExecutor {
             if (isGameStarted || isCountdown) {
                 sender.sendMessage(config.getString("message.command.hideandseek.alreadyStarted"));
             } else {
-                if (Objects.equals(args[1], "custom")) {
-                    List<Player> hiderList = getNextHider();
-                    List<Player> seekerList = getNextSeeker();
+                if (args.length >= 2) {
+                    if (Objects.equals(args[1], "custom")) {
+                        List<Player> hiderList = getNextHider();
+                        List<Player> seekerList = getNextSeeker();
 
-                    if (hiderList.isEmpty() || seekerList.isEmpty()) {
-                        sender.sendMessage(config.getString("message.command.hideandseek.failedcustom"));
-                        return true;
+                        if (hiderList.isEmpty() || seekerList.isEmpty()) {
+                            sender.sendMessage(config.getString("message.command.hideandseek.failedcustom"));
+                            return true;
+                        } else {
+                            Game.customGame();
+                            Game.startCountdown();
+                        }
                     } else {
-                        Game.customGame();
-                        Game.startCountdown();
+                        int argint;
+                        try {
+                            argint = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            return true;
+                        }
+                        if (randomizeTeams(argint)) {
+                            Game.startCountdown();
+                        } else {
+                            sender.sendMessage(config.getString("message.command.hideandseek.overlimit"));
+                        }
                     }
                 } else {
-                    if (randomizeTeams(Integer.parseInt(args[1]))) {
-                        Game.startCountdown();
-                    } else {
-                        sender.sendMessage(config.getString("message.command.hideandseek.overlimit"));
-                    }
+                    sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
+                    return true;
                 }
             }
         } else if (Objects.equals(args[0], "stop")) {
@@ -53,6 +65,14 @@ public class HideandSeekCommand implements CommandExecutor {
                 Game.stopGame();
             } else {
                 sender.sendMessage(config.getString("message.command.hideandseek.alreadyStopped"));
+            }
+        } else if (Objects.equals(args[0], "reload")) {
+            Plugin plugin = HideandSeek.getPlugin();
+            plugin.reloadConfig();
+            try {
+                mapConfig.load(mapConfFile);
+            } catch (Exception e) {
+                logger.warning("Failed to reload config\n" + e);
             }
         } else if (Objects.equals(args[0], "setspawn")) {
             if (args.length >= 2) {
@@ -80,16 +100,34 @@ public class HideandSeekCommand implements CommandExecutor {
             } else {
                 sender.sendMessage(config.getString("message.command.hideandseek.setnumber"));
             }
-        } else if (Objects.equals(args[1], "settings")) {
-            sender.sendMessage(ChatColor.BOLD + config.getString("message.command.hideandseek.settings.title"));
-            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.players"), Bukkit.getOnlinePlayers().size()));
-            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.hiders"), getNextHider().size()));
-            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.seekers"), getNextSeeker().size()));
-            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.spectates"), getNextSpectator().size()));
-            sender.sendMessage(config.getString("message.command.hideandseek.settings.items"));
-            sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.item.flash"), config.getString("item.flash")));
-            sender.sendMessage(config.getString("message.command.hideandseek.settings.time"));
+        } else if (Objects.equals(args[0], "settings")) {
+            if (args.length >= 2) {
+                if (Objects.equals(args[1], "panel")) {
+                    if (sender instanceof Player) {
+
+                    } else {
+                        sender.sendMessage("サーバー側では実行できないコマンドです。");
+                    }
+                } else {
+                    sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
+                }
+            } else {
+                sender.sendMessage(ChatColor.BOLD + config.getString("message.command.hideandseek.settings.title"));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.players"), Bukkit.getOnlinePlayers().size()));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.hiders"), getNextHider().size()));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.seekers"), getNextSeeker().size()));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.spectates"), getNextSpectator().size()));
+                sender.sendMessage(ChatColor.BOLD + config.getString("message.command.hideandseek.settings.items"));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.item.flash"), config.getString("item.flash")));
+                sender.sendMessage(ChatColor.BOLD + config.getString("message.command.hideandseek.settings.time"));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.times.event"), config.getInt("game.event")));
+                sender.sendMessage(String.format(config.getString("message.command.hideandseek.settings.times.countdown"), config.getInt("game.countdown")));
+            }
         }
         return true;
+    }
+
+    public static String getMessage(String name) {
+        return config.getString("message.ui.settings." + name);
     }
 }

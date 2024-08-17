@@ -2,11 +2,14 @@ package io.github.akki.hideandseek.system;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.Random;
+import java.sql.Array;
+import java.util.*;
 
 import static io.github.akki.hideandseek.HideandSeek.config;
 
@@ -15,12 +18,17 @@ public class GameEvent {
         GLOW_ALL,
         SPEEDUP,
         JUMP_BOOST,
-
+        SHUFFLE,
+        BOOM
     }
 
     public static void randomEvent() {
         Events[] eventList = Events.values();
         int randomIndex = new Random().nextInt(eventList.length);
+
+        if (!getEventEnabled(eventList[randomIndex].toString())) {
+            randomEvent();
+        }
 
         eventEvent(eventList[randomIndex]);
     }
@@ -53,10 +61,39 @@ public class GameEvent {
                 }
                 break;
             }
+            case SHUFFLE: {
+                eventMessage("shuffle");
+                List<Location> locations = new ArrayList<>();
+                for (Player player: Bukkit.getOnlinePlayers()) {
+                    locations.add(player.getLocation());
+                }
+                Collections.shuffle(locations);
+                int i = 0;
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.teleport(locations.get(i));
+                    i++;
+                }
+                break;
+            }
+            case BOOM: {
+                eventMessage("boom");
+                List<Location> locations = new ArrayList<>();
+                for (Player player: Bukkit.getOnlinePlayers()) {
+                    locations.add(player.getLocation());
+                }
+                Collections.shuffle(locations);
+                TNTPrimed tnt = Bukkit.getWorld("world").spawn(locations.get(new Random().nextInt(locations.size())), TNTPrimed.class);
+                tnt.setFuseTicks(0);
+                break;
+            }
         }
     }
 
     public static void eventMessage(String eventname) {
         Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.gameevent." + eventname));
+    }
+
+    public static boolean getEventEnabled(String eventName) {
+        return Objects.equals(config.getString("event." + eventName), "enable");
     }
 }

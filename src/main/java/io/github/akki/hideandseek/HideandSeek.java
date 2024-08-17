@@ -9,6 +9,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.NameTagVisibility;
@@ -16,13 +17,19 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
+import java.io.File;
 import java.util.logging.Logger;
+
+import static io.github.akki.hideandseek.system.Game.initItem;
 
 public final class HideandSeek extends JavaPlugin {
     public static Plugin hideandseekPlugin;
     public static final Logger logger = Logger.getLogger("Hideandseek");
     public static GameTimer timer;
     public static FileConfiguration config;
+    public static FileConfiguration mapConfig;
+
+    public static File mapConfFile;
 
     public static BossBar mainBossBar;
     public static BossBar timerBossBar;
@@ -51,7 +58,18 @@ public final class HideandSeek extends JavaPlugin {
         countdownBossBar = Bukkit.createBossBar(ChatColor.GOLD + "COUNTDOWN NOT INITIALIZED", BarColor.YELLOW, BarStyle.SOLID);
         countdownBossBar.setVisible(false);
 
+        initItem();
         hideandseekPlugin = this;
+
+        //initialize config
+        mapConfFile = new File(getDataFolder(), "maps.yml");
+
+        if (!mapConfFile.exists()) {
+            mapConfFile.getParentFile().mkdirs();
+            saveResource("maps.yml", false);
+        }
+
+        mapConfig = YamlConfiguration.loadConfiguration(mapConfFile);
 
         Bukkit.getScheduler().runTask(this, () -> {
             ScoreboardManager manager = Bukkit.getScoreboardManager();
@@ -63,6 +81,9 @@ public final class HideandSeek extends JavaPlugin {
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             world.setGameRule(GameRule.SPAWN_RADIUS, 0);
             world.setGameRule(GameRule.SHOW_DEATH_MESSAGES, false);
+            world.setGameRule(GameRule.MOB_GRIEFING, false);
+            world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+            world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
             world.setDifficulty(Difficulty.NORMAL);
 
             if (scoreboard.getTeam("hider") == null) {
@@ -97,6 +118,8 @@ public final class HideandSeek extends JavaPlugin {
             spectator.setPrefix(ChatColor.DARK_GRAY + "[" + config.getString("message.team.specPrefix") + "]");
             hider.setNameTagVisibility(NameTagVisibility.HIDE_FOR_OTHER_TEAMS);
             seeker.setNameTagVisibility(NameTagVisibility.HIDE_FOR_OTHER_TEAMS);
+            hider.setColor(ChatColor.GREEN);
+            seeker.setColor(ChatColor.RED);
             hider.setAllowFriendlyFire(false);
             seeker.setAllowFriendlyFire(false);
             visitor.setAllowFriendlyFire(false);
@@ -112,6 +135,8 @@ public final class HideandSeek extends JavaPlugin {
         this.getCommand("hider").setExecutor(new HiderCommand());
         this.getCommand("seeker").setExecutor(new SeekerCommand());
         this.getCommand("spectate").setExecutor(new SpectateCommand());
+        this.getCommand("map").setExecutor(new MapCommand());
+        this.getCommand("eventtester").setExecutor(new EventTester());
 
         Game.setBossBarDefault();
         Game.setBossBarTimer();

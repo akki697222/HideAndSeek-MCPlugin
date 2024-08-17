@@ -8,14 +8,14 @@
 
 timer:
   # タイマーのデフォルト値
-  default: 500
+  default: 300
 game:
   # イベントの周期
   event: 30
   # カウントダウン秒数
   countdown: 15
   # 残り何秒で発光を付与するか
-  glow: 30
+  glow: 15
   # ゲーム開始時の位置
   startPos:
     x: 0
@@ -34,6 +34,19 @@ game:
 item:
   # アイテムの有効/無効化
   flash: enable
+
+event:
+  # イベントの有効/無効化
+  GLOW_ALL: enable
+  SPEEDUP: enable
+  JUMP_BOOST: enable
+  SHUFFLE: enable
+  BOOM: enable
+
+duration:
+  GLOW_ALL: 15
+  SPEEDUP: 15
+  JUMP_BOOST: 15
 
 message:
   command:
@@ -55,7 +68,7 @@ message:
       help: "§l§aかくれんぼプラグイン - メインコマンド\n\n/hideandseek start [鬼の人数] - ゲームを開始します\n/hideandseek stop - ゲームを終了します\n/hideandseek setspawn [lobby|game] - 自分のいる位置にロビーまたはマップのスポーン位置を設定します\n/hideandseek settings - 現在の設定を表示します"
       alreadyStarted: "§l§cゲームはすでに開始しています。"
       alreadyStopped: "§l§cゲームはすでに終了しています。"
-      overlimit: "鬼の数をプレイヤー数以上にすることはできません。"
+      overlimit: "鬼の数をプレイヤー数以上、または1以下にすることはできません。"
       setnumber: "値を指定してください。"
       setSpawn: "スポーン位置をX: %s, Y: %s, Z: %s に設定しました。"
       failedcustom: "HiderまたはSeekerはそれぞれ最低1人以上必要です。"
@@ -70,8 +83,11 @@ message:
           flash: "フラッシュ: %s"
         time: "\n- 時間設定 -"
         times:
-          event: "現在のイベント"
-
+          event: "現在のイベント周期: %s"
+          countdown: "現在のカウントダウン秒数: %s"
+      noargument: "引数が不足しています。"
+    map:
+      help: "§l§aかくれんぼプラグイン - Mapコマンド\n\n/map add [マップ名] [マップタイトル] - 現在の位置をスポーン地点とし、マップを追加します。"
     hider:
       help: "§l§aかくれんぼプラグイン - Hiderコマンド\n\n/hider add [プレイヤー] - プレイヤーをhiderに追加します\n/hider remove - プレイヤーをhiderから削除します"
       playernotfound: "プレイヤーが見つかりませんでした。"
@@ -86,8 +102,10 @@ message:
     title: "かくれんぼ"
     timer: "残り時間 : あと%s秒"
     start: "ゲーム開始！鬼から隠れろ！"
+    glow: "残り%s秒となったので、逃走者全員に発光が付与されます。"
+    finalPlayer: "逃走者が残り一人となりました！最後の一人には、鬼と戦うためのアイテムが付与されます。(難易度によって配布されるアイテムは変わります。ピースフルモードでは特殊アイテムは配布されません。)"
     countdown: "開始まで残り%s秒"
-    startCountdown: "ゲームを開始します..."
+    startCountdown: ": ゲームを開始します..."
     hiderKilled: "%sは見つかってしまった！"
     seekerKilled: "鬼の%sは%sの逆襲にあった！"
     playerDeath: "%sは自殺した！"
@@ -100,6 +118,7 @@ message:
     survivedtimes: "は%s秒間鬼から隠れ続けた！"
     killedplayers: "は%s人を見つけた！"
     killedall: "は一人で全員を発見した。"
+    selectedMap: "マップ: %s"
   event:
     join: "§l§eかくれんぼへようこそ、%sさん！"
     leave: "§l§e%sさんが退出しました。"
@@ -115,4 +134,9 @@ message:
   gameevent:
     speedup: "イベント: スピードアップ - 逃げの足が15秒間早くなります。"
     jumpboost: "イベント: 跳躍力 - 全員のジャンプ力が15秒間上昇します。"
-    glowall: "イベント: Glowing All - 全員が10秒間発光します。"
+    glowall: "イベント: Glowing Person - 全員が10秒間発光します。"
+    shuffle: "イベント: スワップ - 全員の位置がランダムに入れ替わります。"
+    boom: "イベント: BOOM!!! - ランダムなプレイヤーが爆発します。"
+  ui:
+    settings:
+      title: "ゲーム設定"

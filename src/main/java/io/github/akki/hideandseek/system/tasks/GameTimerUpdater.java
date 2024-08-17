@@ -13,6 +13,7 @@ import static io.github.akki.hideandseek.system.GameEvent.randomEvent;
 
 public class GameTimerUpdater extends BukkitRunnable {
     public static int eventTimer = 0;
+    public static boolean glowed = false;
 
     public GameTimerUpdater() {
         timer.setCurrentTime(timer.getDefaultTime());
@@ -22,13 +23,16 @@ public class GameTimerUpdater extends BukkitRunnable {
     public void run() {
         if (timer.getCurrentTime() <= 0) {
             if (!timer.getStopped()) {
+                glowed = false;
                 endGame(true, true, false);
                 stopTimer();
             }
             return;
         }
 
-        if (timer.getCurrentTime() <= config.getInt("game.glow")) {
+        if (timer.getCurrentTime() <= config.getInt("game.glow") && !glowed) {
+            glowed = true;
+            Bukkit.broadcastMessage(String.format(config.getString("message.game.glow"), config.getInt("game.glow")));
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (isPlayersInTeam(player, "hider")) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 999999, 255));
