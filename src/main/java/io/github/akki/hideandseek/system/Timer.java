@@ -2,7 +2,7 @@ package io.github.akki.hideandseek.system;
 
 import static io.github.akki.hideandseek.HideandSeek.config;
 
-public class GameTimer implements ITimer {
+public class Timer implements ITimer {
     private int currentTime = 0;
     private int defaultTime = config.getInt("timer.default");
     private boolean isTimerStarted = false;

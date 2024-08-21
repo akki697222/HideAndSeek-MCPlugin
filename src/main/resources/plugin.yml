@@ -8,22 +8,69 @@ authors: [akki697222]
 commands:
   timer:
     description: Timer Command
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [set|get|start|stop|pause] [time]
   hideandseek:
     description: Hide and Seek main Commands.
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [start|end]
   seeker:
     description: Seeker
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [add|remove]
   hider:
     description: Hider
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [add|remove]
   spectate:
     description: Spectate
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [add|remove]
   map:
     description: Map
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [add] [name] [title]
   eventtester:
     description: For event testing
+    permission: hide-and-seek.commands
+    permission-message: "このコマンドを実行するには権限が必要です。"
     usage: /<command> [eventName(Enum GameEvent.Events)]
+  spectator:
+    description: Game Spectating
+    permission-message: "このコマンドを実行するには権限が必要ですが、本来不要なので設定で変更されている可能性があります。"
+    usage: /<command> [join|leave]
+  ready:
+    description: Join to the Game
+    permission-message: "このコマンドを実行するには権限が必要ですが、本来不要なので設定で変更されている可能性があります。"
+    usage: /<command>
+    aliases: [rdy, r]
+  shop:
+    description: Open the shop
+    permission-message: "このコマンドを実行するには権限が必要ですが、本来不要なので設定で変更されている可能性があります。"
+    usage: /<command>
+    aliases: [ s ]
+
+permissions:
+  hide-and-seek.*:
+    children:
+      hide-and-seek.commands: true
+    description: Hide and seek main tree
+    default: op
+  hide-and-seek.commands:
+    description: Hide and seek commands
+    default: op
+  hide-and-seek.commands.spectator:
+    description: Hide and seek spectator commands
+    default: true
+  hide-and-seek.commands.ready:
+    description: Hide and seek ready commands
+    default: true
+  hide-and-seek.commands.shop:
+    description: Hide and seek shop commands
+    default: true

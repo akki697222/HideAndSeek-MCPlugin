@@ -1,21 +1,22 @@
 package io.github.akki.hideandseek.system.tasks;
 
-import io.github.akki.hideandseek.system.Game;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import static io.github.akki.hideandseek.HideandSeek.*;
+import static io.github.akki.hideandseek.HideandSeek.config;
+import static io.github.akki.hideandseek.HideandSeek.timer;
+import static io.github.akki.hideandseek.system.Event.randomEvent;
 import static io.github.akki.hideandseek.system.Game.*;
-import static io.github.akki.hideandseek.system.GameEvent.randomEvent;
 
-public class GameTimerUpdater extends BukkitRunnable {
+public class TimerUpdater extends BukkitRunnable {
     public static int eventTimer = 0;
     public static boolean glowed = false;
 
-    public GameTimerUpdater() {
+    public TimerUpdater() {
         timer.setCurrentTime(timer.getDefaultTime());
     }
 
@@ -46,7 +47,11 @@ public class GameTimerUpdater extends BukkitRunnable {
 
         if (eventTimer >= config.getInt("game.event")) {
             eventTimer = 0;
-            randomEvent();
+            try {
+                randomEvent();
+            } catch (Exception e) {
+                Bukkit.broadcastMessage(ChatColor.RED + "[FATAL] " + ChatColor.RESET + e.getMessage());
+            }
         } else if (!timer.getPaused() && timer.getStarted()){
             eventTimer++;
         }

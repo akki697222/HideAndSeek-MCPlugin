@@ -6,16 +6,37 @@
 # コマンドのヘルプは単体で実行すれば閲覧できます
 # /hideandseekがメインコマンドです
 
+# アイテムやイベントなどのstateはenableかdisableに設定してください。
+
 timer:
   # タイマーのデフォルト値
   default: 300
+
+lobby:
+  # 必要な人数がそろってからスタートするまでの秒数
+  startGame: 20
+  # 鬼と逃げの比率(鬼:逃げ)
+  seekerRatio: 1
+  hiderRatio: 5
+  # スタートに必要な最低人数(2以上)
+  minStart: 2
+
 game:
+  # 最終アイテム
+  finalItem:
+    totem: enable
+  # 鬼のリスポーンまでの時間
+  respawn: 5
   # イベントの周期
   event: 30
   # カウントダウン秒数
   countdown: 15
   # 残り何秒で発光を付与するか
   glow: 15
+  # 時間(tick)
+  day: 1000
+  # バッテリー 特殊アイテムを使用できる回数
+  maxBattery: 8
   # ゲーム開始時の位置
   startPos:
     x: 0
@@ -28,27 +49,66 @@ game:
     z: 0
   # 体力
   health:
-    seeker: 20.0
+    seeker: 40.0
     hider: 10.0
+
+shop:
+  # 各陣営の初期ポイント
+  seekerDefault: 1
+  hiderDefault: 1
+  amount:
+    # 各種特殊アイテムの価格
+    flash: 1
+    seekersearcher: 1
+    knockback_stick: 2
+    battery_pack: 3
 
 item:
   # アイテムの有効/無効化
-  flash: enable
+  flash:
+    state: enable
+    duration: 10
+  seekersearcher:
+    state: disable
+    # Seeker Searcherが捜索する範囲の半径
+    searches: 16
+  knockback_stick:
+    state: disable
+    level: 8
+  battery_pack:
+    state: disable
 
 event:
   # イベントの有効/無効化
-  GLOW_ALL: enable
-  SPEEDUP: enable
-  JUMP_BOOST: enable
-  SHUFFLE: enable
-  BOOM: enable
-
-duration:
-  GLOW_ALL: 15
-  SPEEDUP: 15
-  JUMP_BOOST: 15
+  GLOW_ALL:
+    state: enable
+    mode: hard,chaos
+    duration: 10
+  SPEEDUP:
+    state: enable
+    mode: normal,hard,chaos
+    duration: 15
+  JUMP_BOOST:
+    state: enable
+    mode: normal,hard,chaos
+    duration: 15
+  SHUFFLE:
+    state: enable
+    mode: hard,chaos
+  BOOM:
+    state: enable
+    mode: chaos
 
 message:
+  item:
+    seekersearcher:
+      seekerfound: "半径%sブロック以内に鬼がいます！"
+      notfound: "半径%sブロック以内に鬼はいません。"
+    noBattery: "バッテリー切れです！"
+  shop:
+    title: "ショップ"
+    pointNotEnough: "ポイントが不足しています。"
+    buy: "アイテム '%s' を購入しました！"
   command:
     notfound: "コマンド %s の引数 %s は存在しません。"
     timer:
@@ -72,6 +132,7 @@ message:
       setnumber: "値を指定してください。"
       setSpawn: "スポーン位置をX: %s, Y: %s, Z: %s に設定しました。"
       failedcustom: "HiderまたはSeekerはそれぞれ最低1人以上必要です。"
+      modenotfound: "モード %s が見つかりません。モードは'normal' 'hard' 'chaos'のいずれかである必要があります。"
       settings:
         title: "- 現在の設定 -\n\n"
         players: "現在の人数: %s"
@@ -87,7 +148,7 @@ message:
           countdown: "現在のカウントダウン秒数: %s"
       noargument: "引数が不足しています。"
     map:
-      help: "§l§aかくれんぼプラグイン - Mapコマンド\n\n/map add [マップ名] [マップタイトル] - 現在の位置をスポーン地点とし、マップを追加します。"
+      help: "§l§aかくれんぼプラグイン - Mapコマンド\n\n/map add [マップ名] [マップタイトル] [マップの時間] [マップのモード] - 現在の位置をスポーン地点とし、マップを追加します。"
     hider:
       help: "§l§aかくれんぼプラグイン - Hiderコマンド\n\n/hider add [プレイヤー] - プレイヤーをhiderに追加します\n/hider remove - プレイヤーをhiderから削除します"
       playernotfound: "プレイヤーが見つかりませんでした。"
@@ -97,18 +158,31 @@ message:
     spectate:
       help: "§l§aかくれんぼプラグイン - Spectateコマンド\n\n/spectate add [プレイヤー] - プレイヤーを観戦者に追加します\n/spectate remove - プレイヤーを観戦者から削除します"
       playernotfound: "プレイヤーが見つかりませんでした。"
+    eventtester:
+      help: "EventTester - For Debug"
+    spectator:
+      help: "§l§aかくれんぼプラグイン - Spectatorコマンド(Spectateとは別です)\n\n/spectator join - 観戦者になります\n/spectator leave - 観戦者から抜けます"
+      changeFailed: "ゲーム中にチームを変更することはできません。"
+      alreadyJoined: "すでに観戦者です。"
+      alreadyLeaved: "観戦者ではありません。"
+  mode:
+    normal: "ノーマルモード。いつも通り。"
+    hard: "ハードモード。鬼のアイテムが強化される。逃げには剣が配布される。"
+    chaos: "カオスモード。全員が同じアイテムとエフェクトを付与される。鬼にやられる前に返り討ちにしよう。"
   game:
+    useBattery: "バッテリーが全回復した！"
     timeup: "タイムアップ！！"
     title: "かくれんぼ"
-    timer: "残り時間 : あと%s秒"
+    timer: "残り時間 : あと%s分%s秒"
     start: "ゲーム開始！鬼から隠れろ！"
     glow: "残り%s秒となったので、逃走者全員に発光が付与されます。"
     finalPlayer: "逃走者が残り一人となりました！最後の一人には、鬼と戦うためのアイテムが付与されます。(難易度によって配布されるアイテムは変わります。ピースフルモードでは特殊アイテムは配布されません。)"
     countdown: "開始まで残り%s秒"
-    startCountdown: ": ゲームを開始します..."
+    startCountdown: "ゲームを開始します..."
     hiderKilled: "%sは見つかってしまった！"
     seekerKilled: "鬼の%sは%sの逆襲にあった！"
     playerDeath: "%sは自殺した！"
+    playerExplosion: "%sは爆発した！"
     forceEnd: "ゲームが管理者により強制終了されました。"
     hiderWin: "Hiders Win!"
     seekerWin: "Seekers Win!"
@@ -119,24 +193,32 @@ message:
     killedplayers: "は%s人を見つけた！"
     killedall: "は一人で全員を発見した。"
     selectedMap: "マップ: %s"
+    selectedDifficulty: "モード: %s"
+    selectedMapCredit: "クレジット: %s"
+    respawnat: "あと%s秒でリスポーンします..."
   event:
     join: "§l§eかくれんぼへようこそ、%sさん！"
     leave: "§l§e%sさんが退出しました。"
   plugin:
     enable: "かくれんぼプラグインが有効化されました。"
     disable: "かくれんぼプラグインが無効化されました。"
+    initialize: "Initializing Hide and Seek..."
   team:
     hiderPrefix: "逃げ"
     seekerPrefix: "鬼"
     visitorPrefix: "ロビー"
     deadPrefix: "死亡"
     specPrefix: "観戦者"
+    waitingPrefix: "待機中"
   gameevent:
-    speedup: "イベント: スピードアップ - 逃げの足が15秒間早くなります。"
-    jumpboost: "イベント: 跳躍力 - 全員のジャンプ力が15秒間上昇します。"
-    glowall: "イベント: Glowing Person - 全員が10秒間発光します。"
-    shuffle: "イベント: スワップ - 全員の位置がランダムに入れ替わります。"
-    boom: "イベント: BOOM!!! - ランダムなプレイヤーが爆発します。"
+    speedup: "スピードアップ - 逃げの足が%s秒間早くなります。"
+    jumpboost: "跳躍力 - 全員のジャンプ力が%s秒間上昇します。"
+    glowall: "発光 - 全員が%s秒間発光します。"
+    shuffle: "スワップ - 全員の位置がランダムに入れ替わります。"
+    boom: "BOOM!!! - ランダムなプレイヤーが爆発します。"
   ui:
     settings:
       title: "ゲーム設定"
+  lobby:
+    playerNotEnough: "プレイヤーがあと%s人必要です..."
+    countdown: "あと%s秒で開始します！"

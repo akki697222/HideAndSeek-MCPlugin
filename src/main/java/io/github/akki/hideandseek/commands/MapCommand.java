@@ -1,8 +1,6 @@
 package io.github.akki.hideandseek.commands;
 
-import io.github.akki.hideandseek.system.Game;
-import io.github.akki.hideandseek.system.mapsystem.MapManager;
-import org.bukkit.Bukkit;
+import io.github.akki.hideandseek.system.map.MapManager;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 import static io.github.akki.hideandseek.HideandSeek.config;
-import static io.github.akki.hideandseek.HideandSeek.hideandseekPlugin;
 
 public class MapCommand implements CommandExecutor {
     @Override
@@ -23,10 +20,17 @@ public class MapCommand implements CommandExecutor {
             return true;
         }
         if (Objects.equals(args[0], "add")) {
-            if (args.length >= 3) {
+            if (args.length >= 5) {
                 if (sender instanceof Player) {
                     Location pl = ((Player) sender).getLocation();
-                    MapManager.addMap(args[1], args[2], (int) pl.getX(), (int) pl.getY(), (int) pl.getZ());
+                    int parsedInt;
+                    try {
+                        parsedInt = Integer.parseInt(args[3]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(e.getMessage());
+                        return true;
+                    }
+                    MapManager.addMap(args[1], args[2], (int) pl.getX(), (int) pl.getY(), (int) pl.getZ(), parsedInt, args[4]);
                 } else {
                     sender.sendMessage("サーバー側では実行できないコマンドです。");
                 }

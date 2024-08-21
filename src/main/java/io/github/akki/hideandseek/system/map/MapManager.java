@@ -1,18 +1,25 @@
-package io.github.akki.hideandseek.system.mapsystem;
+package io.github.akki.hideandseek.system.map;
 
+import io.github.akki.hideandseek.system.Game;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
 
 public class MapManager {
-    public static void addMap(String name, String title, int spawnX, int spawnY, int spawnZ) {
+    public static void addMap(String name, String title, int spawnX, int spawnY, int spawnZ, int time, String mode) {
         mapConfig.set("maps." + name + ".title", title);
         mapConfig.set("maps." + name + ".x", spawnX);
         mapConfig.set("maps." + name + ".y", spawnY);
         mapConfig.set("maps." + name + ".z", spawnZ);
+        mapConfig.set("maps." + name + ".time", time);
+        mapConfig.set("maps." + name + ".mode", mode);
+        mapConfig.set("maps." + name + ".credit", "NO PERSON");
 
         try {
             mapConfig.save(mapConfFile);
@@ -52,13 +59,21 @@ public class MapManager {
                     mapInfo.put("y", selectedMap.getInt("y"));
                     mapInfo.put("z", selectedMap.getInt("z"));
 
+                    mapInfo.put("time", selectedMap.getInt("time"));
+                    mapInfo.put("mode", selectedMap.getString("mode"));
+                    mapInfo.put("credit", selectedMap.getString("credit"));
+
+                    if (Game.parseMode(selectedMap.getString("mode")) != Game.getMode()) {
+                        return selectRandomMap();
+                    }
+
                     return mapInfo;
                 }
-                logger.info("selectedmap null");
+                logger.warning("selected map is null");
             }
-            logger.info("mapkey null");
+            logger.warning("map key is null");
         }
-        logger.info("mapsection null");
+        logger.warning("maps section is null");
         return null;
     }
 }

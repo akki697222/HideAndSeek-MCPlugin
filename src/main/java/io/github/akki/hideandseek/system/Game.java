@@ -1,22 +1,22 @@
 package io.github.akki.hideandseek.system;
 
-import io.github.akki.hideandseek.system.mapsystem.MapManager;
-import io.github.akki.hideandseek.system.tasks.GameCountdown;
+import io.github.akki.hideandseek.system.map.MapManager;
+import io.github.akki.hideandseek.system.tasks.Countdown;
 import io.github.akki.hideandseek.system.tasks.GameTick;
+import io.github.akki.hideandseek.utils.ConfigUtil;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 
 import javax.annotation.Nonnull;
-
 import java.util.*;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
@@ -28,38 +28,45 @@ public class Game {
     public static Player finalPlayer;
     public static List<Player> surivedHiders = new ArrayList<>();
 
-    public static ItemStack flashPotion;
-    public static ItemStack demonStick;
-
     public static List<Player> nextHider = new ArrayList<>();
     public static List<Player> nextSeeker = new ArrayList<>();
     public static List<Player> nextSpectator = new ArrayList<>();
 
+    public static Map<String, Object> currentMap;
+
     public static boolean isCountdown = false;
 
     private static int hiders = 0;
+    public static enumMode currentMode = enumMode.normal;
 
-    public static void initItem() {
-        flashPotion = new ItemStack(Material.SPLASH_POTION, 1);
-        PotionMeta potionMeta = (PotionMeta) flashPotion.getItemMeta();
+    public static enumMode getMode() {
+        return currentMode;
+    }
 
-        if (potionMeta != null) {
-            potionMeta.setDisplayName("フラッシュポーション");
-            potionMeta.setColor(Color.WHITE);
-            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 255), true);
-            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 2), true);
-            flashPotion.setItemMeta(potionMeta);
+    public static void setMode(enumMode mode) {
+        currentMode = mode;
+    }
+
+    public static enumMode parseMode(String mode) {
+        if (Objects.equals(mode, "normal")) {
+            return enumMode.normal;
+        } else if (Objects.equals(mode, "hard")) {
+            return enumMode.hard;
+        } else if (Objects.equals(mode, "chaos")) {
+            return enumMode.chaos;
+        } else {
+            return null;
         }
+    }
 
-        demonStick = new ItemStack(Material.STICK, 1);
-
-        ItemMeta meta = demonStick.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName("§a鬼の金棒");
-            demonStick.setItemMeta(meta);
+    public static int getHider() {
+        int hid = 0;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (isPlayersInTeam(player, "hider")) {
+                hid++;
+            }
         }
-
-        demonStick.addUnsafeEnchantment(Enchantment.KNOCKBACK, 10);
+        return hid;
     }
 
     public static void addNextHider(Player player) {
@@ -78,6 +85,26 @@ public class Game {
         removeNextSeeker(player);
         removeNextHider(player);
         nextSpectator.add(player);
+    }
+
+    public static int getSeeker() {
+        int hid = 0;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (isPlayersInTeam(player, "seeker")) {
+                hid++;
+            }
+        }
+        return hid;
+    }
+
+    public static boolean checkWaiting() {
+        int waitings = 0;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (isPlayersInTeam(player, "waiting")) {
+                waitings++;
+            }
+        }
+        return waitings > 1;
     }
 
     public static void removeNextHider(Player player) {
@@ -106,16 +133,19 @@ public class Game {
 
     public static boolean randomizeTeams(int seekers) {
         Random random = new Random();
-
-        Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
-        List<Player> playerList = new ArrayList<>(onlinePlayers);
+        List<Player> playerList = new ArrayList<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if ((!isPlayersInTeam(player, "spectator") || !isPlayersInTeam(player, "visitor")) && isPlayersInTeam(player, "waiting")) {
+                playerList.add(player);
+            }
+        }
 
         if (seekers >= playerList.size() || seekers < 1) {
             return false;
         }
 
         for (Player player : playerList) {
-            if (!isPlayersInTeam(player, "spectator")) {
+            if ((!isPlayersInTeam(player, "spectator") || !isPlayersInTeam(player, "visitor")) && isPlayersInTeam(player, "waiting")) {
                 Team team = scoreboard.getEntryTeam(player.getName());
                 if (team != null) {
                     team.removeEntry(player.getName());
@@ -134,6 +164,82 @@ public class Game {
         }
 
         return true;
+    }
+
+    public static void startCountdown() {
+        reloadAllConfig();
+        currentMap = MapManager.selectRandomMap();
+        if (currentMap == null) {
+            throw(new NullPointerException("Invalid Map: Returned map is null."));
+        }
+        isCountdown = true;
+        countdown = config.getInt("game.countdown");
+
+        switch (currentMode) {
+            case normal:
+                Bukkit.broadcastMessage(ChatColor.BOLD + config.getString("message.mode.normal"));
+                break;
+            case hard:
+                Bukkit.broadcastMessage(ChatColor.BOLD + config.getString("message.mode.hard"));
+                break;
+            case chaos:
+                Bukkit.broadcastMessage(ChatColor.BOLD + config.getString("message.mode.chaos"));
+                break;
+            default:
+                break;
+        }
+
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + config.getString("message.game.startCountdown"));
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + String.format(config.getString("message.game.selectedMap"), currentMap.get("title")));
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + String.format(config.getString("message.game.selectedDifficulty"), currentMode.toString()));
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + String.format(config.getString("message.game.selectedMapCredit"), currentMap.get("credit")));
+
+        for (Entity entity : Bukkit.getWorld("world").getEntities()) {
+            if (entity instanceof Item) {
+                entity.remove();
+            }
+        }
+
+        mainBossBar.setVisible(false);
+        countdownBossBar.setVisible(true);
+        timerBossBar.setVisible(false);
+        new Countdown().runTaskTimer(getPlugin(), 0L, 20L);
+
+        int x = (int) currentMap.get("x");
+        int y = (int) currentMap.get("y");
+        int z = (int) currentMap.get("z");
+
+        int time = (int) currentMap.get("time");
+
+        Bukkit.getWorld("world").setTime(time);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!isPlayersInTeam(player, "visitor")) {
+                player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
+            }
+            if (!isPlayersInTeam(player, "spectator")) {
+                player.setGameMode(GameMode.ADVENTURE);
+            }
+            player.getInventory().clear();
+            battery.getScore(player).setScore(config.getInt("game.maxBattery"));
+            if (isPlayersInTeam(player, "seeker")) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, config.getInt("game.countdown"), 255));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * config.getInt("game.countdown"), 255));
+                ItemStack leatherChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+                LeatherArmorMeta meta = (LeatherArmorMeta) leatherChestplate.getItemMeta();
+                if (meta != null) {
+                    meta.setColor(Color.RED);
+                    leatherChestplate.setItemMeta(meta);
+                }
+                player.getInventory().setChestplate(leatherChestplate);
+                shopPoint.getScore(player).setScore(config.getInt("shop.seekerDefault"));
+            } else if (isPlayersInTeam(player, "hider")) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, config.getInt("game.countdown"), 255));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * config.getInt("game.countdown"), 3));
+                shopPoint.getScore(player).setScore(config.getInt("shop.hiderDefault"));
+                hiders++;
+            }
+        }
     }
 
     public static void startTimer() {
@@ -190,77 +296,9 @@ public class Game {
         nextSpectator = new ArrayList<>();
     }
 
-    public static void startCountdown() {
-        Map<String, Object> map = MapManager.selectRandomMap();
-        if (map == null) {
-            throw(new NullPointerException("Invalid Map: Returned map is null."));
-        }
-        isCountdown = true;
-        countdown = config.getInt("game.countdown");
-        Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.startCountdown"));
-        Bukkit.broadcastMessage(ChatColor.GOLD + String.format(config.getString("message.game.selectedMap"), map.get("title")));
-        mainBossBar.setVisible(false);
-        countdownBossBar.setVisible(true);
-        timerBossBar.setVisible(false);
-        new GameCountdown().runTaskTimer(getPlugin(), 0L, 20L);
-
-        int x = (int) map.get("x");
-        int y = (int) map.get("y");
-        int z = (int) map.get("z");
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
-            if (!isPlayersInTeam(player, "spectator")) {
-                player.setGameMode(GameMode.ADVENTURE);
-            }
-            player.getInventory().clear();
-            if (isPlayersInTeam(player, "seeker")) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 15, 255));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 15, 255));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 20 * 15, 238));
-            } else if (isPlayersInTeam(player, "hider")) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 15, 3));
-                hiders++;
-            }
-        }
-    }
-
-    public static void startGame() {
-        isGameStarted = true;
-        isCountdown = false;
-        Bukkit.broadcastMessage(ChatColor.GOLD + config.getString("message.game.start"));
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 3.0f, 1.0f);
-            player.getActivePotionEffects().forEach(effect ->
-                    player.removePotionEffect(effect.getType())
-            );
-            giveItems(player);
-        }
-        startTimer();
-        gameTick = new GameTick().runTaskTimer(getPlugin(), 0L, 5L);
-    }
-
     public static void giveItems(Player player) {
-        switch (Bukkit.getWorld("world").getDifficulty()) {
-            case PEACEFUL: {
-                if (isPlayersInTeam(player, "seeker")) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 2));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * timer.getDefaultTime(), 255));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
-                }
-                break;
-            }
-            case EASY: {
-                if (isPlayersInTeam(player, "seeker")) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 1));
-                    player.getInventory().addItem(new ItemStack(Material.DIAMOND_AXE, 1));
-                    player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 16));
-                } else if ((isPlayersInTeam(player, "hider"))) {
-                    player.getInventory().addItem(new ItemStack(Material.BREAD, 64));
-                }
-                break;
-            }
-            case NORMAL: {
+        switch (currentMode) {
+            case normal: {
                 if (isPlayersInTeam(player, "seeker")) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 2));
                     player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
@@ -271,7 +309,7 @@ public class Game {
                 }
                 break;
             }
-            case HARD: {
+            case hard: {
                 if (isPlayersInTeam(player, "seeker")) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 3));
                     player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
@@ -286,13 +324,84 @@ public class Game {
                 }
                 break;
             }
+            case chaos: {
+                if (isPlayersInTeam(player, "seeker")) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 3));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 20 * timer.getDefaultTime(), 3));
+                    player.getInventory().addItem(new ItemStack(Material.NETHERITE_AXE, 1));
+                    player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 64));
+                } else if ((isPlayersInTeam(player, "hider"))) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * timer.getDefaultTime(), 3));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20 * timer.getDefaultTime(), 255));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 20 * timer.getDefaultTime(), 3));
+                    player.getInventory().addItem(new ItemStack(Material.NETHERITE_AXE, 1));
+                    player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 64));
+                }
+                break;
+            }
             default:
                 break;
         }
 
-        if (Objects.equals(config.getString("item.flash"), "enable")) {
-            player.getInventory().addItem(flashPotion);
+        if (ConfigUtil.isEnabled(config, "item.flash.state")) {
+            player.getInventory().addItem(GameItems.getItem(SpecialItems.FLASH_POTION));
         }
+
+        if (ConfigUtil.isEnabled(config, "item.seekersearcher.state") && isPlayersInTeam(player, "hider")) {
+            player.getInventory().addItem(GameItems.getItem(SpecialItems.SEEKER_SEARCHER));
+        }
+
+        if (ConfigUtil.isEnabled(config, "item.battery_pack.state")) {
+            player.getInventory().addItem(GameItems.getItem(SpecialItems.BATTERY_PACK));
+        }
+
+        if (ConfigUtil.isEnabled(config, "item.knockback_stick.state")) {
+            player.getInventory().addItem(GameItems.getItem(SpecialItems.KNOCKBACK_STICK));
+        }
+    }
+
+    public static void startGame() {
+        isGameStarted = true;
+        isCountdown = false;
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + config.getString("message.game.start"));
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 3.0f, 1.0f);
+            player.getActivePotionEffects().forEach(effect ->
+                    player.removePotionEffect(effect.getType())
+            );
+            giveItems(player);
+        }
+        startTimer();
+        gameTick = new GameTick().runTaskTimer(getPlugin(), 0L, 5L);
+    }
+
+    public static void endGame(boolean isTimedUp, boolean winnedTeams, boolean isForceEnded) { //winnedTeams : Hider true Seeker false
+        int dayTime = config.getInt("game.day");
+        Bukkit.getWorld("world").setTime(dayTime);
+        int time = timer.getCurrentTime();
+        isGameStarted = false;
+        if (gameTick != null) {
+            gameTick.cancel();
+        }
+        stopTimer();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1.0F, 1.0F);
+            player.getActivePotionEffects().forEach(effect ->
+                    player.removePotionEffect(effect.getType())
+            );
+            player.setHealth(10);
+            player.setFoodLevel(20);
+            player.setSaturation(20);
+            shopPoint.getScore(player).setScore(0);
+        }
+        if (isForceEnded) {
+            Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + config.getString("message.game.forceEnd"));
+        } else teamProcess(winnedTeams, isTimedUp, timer.getDefaultTime() - time);
+
+        Bukkit.getScheduler().runTaskLater(getPlugin(), Game::lobbyProcess, 20 * 5);
     }
 
     public static void stopGame() {
@@ -363,29 +472,38 @@ public class Game {
         }
     }
 
-    public static void endGame(boolean isTimedUp, boolean winnedTeams, boolean isForceEnded) { //winnedTeams : Hider true Seeker false
-        int time = timer.getCurrentTime();
-        isGameStarted = false;
-        if (gameTick != null) {
-            gameTick.cancel();
+    public static void finalItem(int hiderCount) {
+        if (isFinal) {
+            return;
         }
-        stopTimer();
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.setGameMode(GameMode.SPECTATOR);
-            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 3.0f, 1.0f);
-            player.getActivePotionEffects().forEach(effect ->
-                    player.removePotionEffect(effect.getType())
-            );
-            player.setHealth(player.getMaxHealth());
-            player.setFoodLevel(20);
-            player.setSaturation(20);
+        isFinal = true;
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[SYSTEM] " + ChatColor.RESET + ChatColor.BOLD + config.getString("message.game.finalPlayer"));
+        finalPlayer.getInventory().addItem(new ItemStack(Material.IRON_SWORD, 1));
+        ItemStack flashItem = GameItems.getItem(SpecialItems.FLASH_POTION, 1);
+        ItemStack stickItem = GameItems.getItem(SpecialItems.KNOCKBACK_STICK, 1);
+        switch (currentMode) {
+            case normal: {
+                if (ConfigUtil.isEnabled(config, "item.flash.state")) {
+                    finalPlayer.getInventory().addItem(flashItem);
+                }
+                break;
+            }
+            case hard: {
+                if (ConfigUtil.isEnabled(config, "item.flash.state")) {
+                    finalPlayer.getInventory().addItem(flashItem);
+                    finalPlayer.getInventory().addItem(flashItem);
+                }
+                if (ConfigUtil.isEnabled(config, "item.knockback_stick.state")) {
+                    finalPlayer.getInventory().addItem(stickItem);
+                }
+                break;
+            }
+            default:
+                break;
         }
-        if (isForceEnded) {
-            Bukkit.broadcastMessage(config.getString("message.game.forceEnd"));
-        } else teamProcess(winnedTeams, isTimedUp, timer.getDefaultTime() - time);
-
-        Bukkit.getScheduler().runTaskLater(getPlugin(), Game::lobbyProcess, 20 * 5);
+        if (ConfigUtil.isEnabled(config, "game.finalItem.totem")) {
+            finalPlayer.getInventory().addItem(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
+        }
     }
 
     public static void lobbyProcess() {
@@ -406,33 +524,16 @@ public class Game {
 
     public static boolean isFinal = false;
 
-    public static void finalItem(int hiderCount) {
-        if (isFinal) {
-            return;
+    public static void countdownTick() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (countdown <= 3) {
+                player.playNote(player.getLocation(), Instrument.PLING, Note.natural(1, Note.Tone.C));
+            } else {
+                player.playNote(player.getLocation(), Instrument.STICKS, Note.natural(0, Note.Tone.F));
+            }
         }
-        isFinal = true;
-        Bukkit.broadcastMessage(config.getString("message.game.finalPlayer"));
-        finalPlayer.getInventory().addItem(new ItemStack(Material.IRON_SWORD, 1));
-        switch (Bukkit.getWorld("world").getDifficulty()) {
-            case EASY: {
-                finalPlayer.getInventory().addItem(flashPotion);
-                break;
-            }
-            case NORMAL: {
-                finalPlayer.getInventory().addItem(flashPotion);
-                finalPlayer.getInventory().addItem(demonStick);
-                break;
-            }
-            case HARD: {
-                finalPlayer.getInventory().addItem(flashPotion);
-                finalPlayer.getInventory().addItem(flashPotion);
-                finalPlayer.getInventory().addItem(demonStick);
-                finalPlayer.getInventory().addItem(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
-                break;
-            }
-            default:
-                break;
-        }
+        countdownBossBar.setProgress(calcProgress(countdown, config.getInt("game.countdown")));
+        countdownBossBar.setTitle(String.format(config.getString("message.game.countdown"), countdown));
     }
 
     public static boolean checkHiders() {
@@ -463,12 +564,12 @@ public class Game {
         return seekerCount != 0;
     }
 
-    public static void countdownTick() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.playNote(player.getLocation(), Instrument.PLING, Note.natural(1, Note.Tone.C));
-        }
-        countdownBossBar.setProgress(calcProgress(countdown, config.getInt("game.countdown")));
-        countdownBossBar.setTitle(ChatColor.GOLD + String.format(config.getString("message.game.countdown"), countdown));
+    public static void setBossBarTimer() {
+        int min = (timer.getDefaultTime() % 3600) / 60;
+        int sec = timer.getDefaultTime() % 60;
+        timerBossBar.setTitle(ChatColor.GREEN + String.format(config.getString("message.game.timer"), min, sec));
+        timerBossBar.setColor(BarColor.GREEN);
+        timerBossBar.setProgress(0.0);
     }
 
     public static void setBossBarDefault() {
@@ -480,16 +581,6 @@ public class Game {
         countdownBossBar.setTitle(ChatColor.GOLD + String.format(config.getString("message.game.countdown"), countdown));
         countdownBossBar.setColor(BarColor.YELLOW);
         countdownBossBar.setProgress(1.0);
-    }
-
-    public static void setBossBarTimer() {
-        timerBossBar.setTitle(ChatColor.GREEN + String.format(config.getString("message.game.timer"), timer.getDefaultTime()));
-        timerBossBar.setColor(BarColor.GREEN);
-        timerBossBar.setProgress(0.0);
-    }
-
-    private static double calcProgress(int value, int maxValue) {
-        return (double) (maxValue - value) / maxValue;
     }
 
     public static void updateBossBarTimer(int time, int startTime) {
@@ -508,13 +599,20 @@ public class Game {
         }
         timerBossBar.setProgress(progress);
         timerBossBar.setColor(bcolor);
-        timerBossBar.setTitle(ccolor + String.format(config.getString("message.game.timer"), time));
+        int min = (time % 3600) / 60;
+        int sec = time % 60;
+        timerBossBar.setTitle(ccolor + String.format(config.getString("message.game.timer"), min, sec));
+    }
+
+    private static double calcProgress(int value, int maxValue) {
+        return (double) (maxValue - value) / maxValue;
     }
 
     public static void initPlayer(@Nonnull Player player) {
         mainBossBar.addPlayer(player);
         timerBossBar.addPlayer(player);
         countdownBossBar.addPlayer(player);
+        battery.getScore(player).setScore(config.getInt("game.maxBattery"));
         if (isGameStarted) {
             if (isPlayersInTeam(player, "seeker")) {
                 seeker.addPlayer(player);
@@ -529,5 +627,11 @@ public class Game {
             player.setGameMode(GameMode.ADVENTURE);
             player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
         }
+    }
+
+    public enum enumMode {
+        chaos,
+        hard,
+        normal,
     }
 }

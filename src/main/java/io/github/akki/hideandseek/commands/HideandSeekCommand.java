@@ -2,7 +2,6 @@ package io.github.akki.hideandseek.commands;
 
 import io.github.akki.hideandseek.HideandSeek;
 import io.github.akki.hideandseek.system.Game;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -35,25 +34,35 @@ public class HideandSeekCommand implements CommandExecutor {
                         List<Player> hiderList = getNextHider();
                         List<Player> seekerList = getNextSeeker();
 
-                        if (hiderList.isEmpty() || seekerList.isEmpty()) {
+                        if (hiderList.isEmpty() || seekerList.isEmpty() || !checkWaiting()) {
                             sender.sendMessage(config.getString("message.command.hideandseek.failedcustom"));
                             return true;
                         } else {
                             Game.customGame();
                             Game.startCountdown();
                         }
-                    } else {
+                    } else if (args.length >= 3) {
                         int argint;
                         try {
                             argint = Integer.parseInt(args[1]);
                         } catch (NumberFormatException e) {
                             return true;
                         }
+                        enumMode mode = parseMode(args[2]);
+                        if (mode == null) {
+                            sender.sendMessage(String.format(config.getString("message.command.hideandseek.modenotfound"), args[2]));
+                            return true;
+                        } else {
+                            Game.setMode(mode);
+                        }
                         if (randomizeTeams(argint)) {
                             Game.startCountdown();
                         } else {
                             sender.sendMessage(config.getString("message.command.hideandseek.overlimit"));
                         }
+                    } else {
+                        sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
+                        return true;
                     }
                 } else {
                     sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
