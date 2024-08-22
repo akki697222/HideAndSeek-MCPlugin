@@ -54,8 +54,11 @@ game:
 
 shop:
   # 各陣営の初期ポイント
-  seekerDefault: 1
+  seekerDefault: 2
   hiderDefault: 1
+  hiderGiveDelay: 60
+  hidersAdd: 1
+  seekersAdd: 1
   amount:
     # 各種特殊アイテムの価格
     flash: 1
@@ -66,7 +69,7 @@ shop:
 item:
   # アイテムの有効/無効化
   flash:
-    state: enable
+    state: disable
     duration: 10
   seekersearcher:
     state: disable
@@ -110,6 +113,9 @@ message:
     pointNotEnough: "ポイントが不足しています。"
     buy: "アイテム '%s' を購入しました！"
   command:
+    fly:
+      enable: "飛行を有効化しました。"
+      disable: "飛行を無効化しました。"
     notfound: "コマンド %s の引数 %s は存在しません。"
     timer:
       help: "§l§aかくれんぼプラグイン - タイマーコマンド\n\n/timer start - タイマーをスタートします\n/timer stop - タイマーをストップします\n/timer pause - タイマーを一時停止します\n/timer set [整数] - タイマーの時間を設定します"
@@ -170,6 +176,7 @@ message:
     hard: "ハードモード。鬼のアイテムが強化される。逃げには剣が配布される。"
     chaos: "カオスモード。全員が同じアイテムとエフェクトを付与される。鬼にやられる前に返り討ちにしよう。"
   game:
+    getPoint: "%sポイントゲットしました！"
     useBattery: "バッテリーが全回復した！"
     timeup: "タイムアップ！！"
     title: "かくれんぼ"

@@ -116,18 +116,13 @@ public class Event {
     }
 
     public static boolean getEventEnabled(String eventName) {
-        logger.info(eventName);
         String[] splitedEvents = config.getString("event." + eventName + ".mode").split(",");
         boolean ans = false;
-        for (String splitedEvent : splitedEvents) {
-            logger.info(splitedEvent);
-        }
         for (String event : splitedEvents) {
             if (Objects.equals(config.getString("event." + eventName + ".state"), "enable") && Objects.equals(event, Game.getMode().toString())) {
                 ans = true;
             }
         }
-        logger.info(String.valueOf(ans));
         return ans;
     }
 

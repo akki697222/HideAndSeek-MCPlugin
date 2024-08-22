@@ -221,6 +221,8 @@ public class Game {
                 player.setGameMode(GameMode.ADVENTURE);
             }
             player.getInventory().clear();
+            player.setAllowFlight(false);
+            player.setFlying(false);
             battery.getScore(player).setScore(config.getInt("game.maxBattery"));
             if (isPlayersInTeam(player, "seeker")) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, config.getInt("game.countdown"), 255));
@@ -344,20 +346,22 @@ public class Game {
                 break;
         }
 
-        if (ConfigUtil.isEnabled(config, "item.flash.state")) {
-            player.getInventory().addItem(GameItems.getItem(SpecialItems.FLASH_POTION));
-        }
+        if (!isPlayersInTeam(player, "waiting") || !isPlayersInTeam(player, "visitor") || !isPlayersInTeam(player, "spectator")) {
+            if (ConfigUtil.isEnabled(config, "item.flash.state")) {
+                player.getInventory().addItem(GameItems.getItem(SpecialItems.FLASH_POTION));
+            }
 
-        if (ConfigUtil.isEnabled(config, "item.seekersearcher.state") && isPlayersInTeam(player, "hider")) {
-            player.getInventory().addItem(GameItems.getItem(SpecialItems.SEEKER_SEARCHER));
-        }
+            if (ConfigUtil.isEnabled(config, "item.seekersearcher.state") && isPlayersInTeam(player, "hider")) {
+                player.getInventory().addItem(GameItems.getItem(SpecialItems.SEEKER_SEARCHER));
+            }
 
-        if (ConfigUtil.isEnabled(config, "item.battery_pack.state")) {
-            player.getInventory().addItem(GameItems.getItem(SpecialItems.BATTERY_PACK));
-        }
+            if (ConfigUtil.isEnabled(config, "item.battery_pack.state")) {
+                player.getInventory().addItem(GameItems.getItem(SpecialItems.BATTERY_PACK));
+            }
 
-        if (ConfigUtil.isEnabled(config, "item.knockback_stick.state")) {
-            player.getInventory().addItem(GameItems.getItem(SpecialItems.KNOCKBACK_STICK));
+            if (ConfigUtil.isEnabled(config, "item.knockback_stick.state")) {
+                player.getInventory().addItem(GameItems.getItem(SpecialItems.KNOCKBACK_STICK));
+            }
         }
     }
 

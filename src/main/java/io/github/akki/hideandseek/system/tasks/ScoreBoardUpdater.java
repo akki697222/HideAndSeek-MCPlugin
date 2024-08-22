@@ -20,7 +20,6 @@ public class ScoreBoardUpdater extends BukkitRunnable {
             gameView.setDisplaySlot(DisplaySlot.SIDEBAR);
 
             for (Player player : Bukkit.getOnlinePlayers()) {
-                gameView.getScore("ポイント: " + shopPoint.getScore(player).getScore()).setScore(0);
                 player.setScoreboard(scoreboard);
                 player.sendActionBar(ChatColor.RED + "鬼の人数: " + getSeeker() + ChatColor.RESET + " | " + ChatColor.GREEN + "逃げの人数: " + getHider() + ChatColor.RESET + " | " + "バッテリー残量: " + battery.getScore(player).getScore());
             }

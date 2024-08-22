@@ -55,6 +55,10 @@ commands:
     permission-message: "このコマンドを実行するには権限が必要ですが、本来不要なので設定で変更されている可能性があります。"
     usage: /<command>
     aliases: [ s ]
+  fly:
+    description: Fly
+    permission-message: "このコマンドを実行するには権限が必要です。"
+    usage: /<command>
 
 permissions:
   hide-and-seek.*:
@@ -74,3 +78,6 @@ permissions:
   hide-and-seek.commands.shop:
     description: Hide and seek shop commands
     default: true
+  hide-and-seek.commands.fly:
+    description: Fly
+    default: op

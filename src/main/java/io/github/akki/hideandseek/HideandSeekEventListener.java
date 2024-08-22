@@ -1,10 +1,7 @@
 package io.github.akki.hideandseek;
 
 import io.github.akki.hideandseek.system.Game;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
@@ -68,7 +65,7 @@ public class HideandSeekEventListener implements Listener {
             int x = (int) currentMap.get("x");
             int y = (int) currentMap.get("y");
             int z = (int) currentMap.get("z");
-            if (!isPlayersInTeam(player, "seeker")) {
+            if (isPlayersInTeam(player, "hider") && killer != null) {
                 Team team = scoreboard.getEntryTeam(player.getName());
                 if (team != null) {
                     team.removeEntry(player.getName());
@@ -76,7 +73,20 @@ public class HideandSeekEventListener implements Listener {
 
                 dead.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
-            } else if (isPlayersInTeam(player, "seeker") && (killer == null || cause == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION)) {
+                if (isPlayersInTeam(killer, "seeker")) {
+                    killer.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
+                    killer.sendMessage(ChatColor.GREEN + String.format(config.getString("message.game.getPoint"), config.getInt("shop.seekersAdd")));
+                    shopPoint.getScore(killer).setScore(shopPoint.getScore(killer).getScore() + config.getInt("shop.seekersAdd"));
+                }
+            } else if (!isPlayersInTeam(player, "seeker")) {
+                Team team = scoreboard.getEntryTeam(player.getName());
+                if (team != null) {
+                    team.removeEntry(player.getName());
+                }
+
+                dead.addPlayer(player);
+                player.setGameMode(GameMode.SPECTATOR);
+            } else if (isPlayersInTeam(player, "seeker") && cause == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
                 Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
                     int respawns = config.getInt("game.respawn");
 
@@ -98,6 +108,20 @@ public class HideandSeekEventListener implements Listener {
 
                 dead.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
+            } else if (isPlayersInTeam(player, "seeker") && killer == null) {
+                Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
+                    int respawns = config.getInt("game.respawn");
+
+                    @Override
+                    public void run() {
+                        player.sendTitle(String.format(config.getString("message.game.respawnat"), respawns), "");
+                        respawns--;
+                        if (respawns <= 0) {
+                            cancel();
+                        }
+                    }
+                }, 0L, 20L);
+                player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
             }
         }
     }

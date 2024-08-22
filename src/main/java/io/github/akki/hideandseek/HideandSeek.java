@@ -78,6 +78,7 @@ public final class HideandSeek extends JavaPlugin {
         }
 
         logger.info(config.getString("message.plugin.initialize"));
+        logger.info("Hide-and-seek " + this.getPluginMeta().getVersion() + "\n2024 akki697222 / MIT Licence");
 
         hideandseekPlugin = this;
 
@@ -143,7 +144,7 @@ public final class HideandSeek extends JavaPlugin {
                 battery = scoreboard.getObjective("battery");
             }
             if (scoreboard.getObjective("gameView") == null) {
-                gameView = scoreboard.registerNewObjective("gameView", "dummy", ChatColor.GREEN + config.getString("message.game.title"));
+                gameView = scoreboard.registerNewObjective("gameView", "dummy", ChatColor.GREEN + "    " + config.getString("message.game.title") + "    ");
             } else {
                 gameView = scoreboard.getObjective("gameView");
             }
@@ -189,6 +190,7 @@ public final class HideandSeek extends JavaPlugin {
         this.getCommand("spectator").setExecutor(new SpectatorCommand());
         this.getCommand("ready").setExecutor(new ReadyCommand());
         this.getCommand("shop").setExecutor(new ShopCommand());
+        this.getCommand("fly").setExecutor(new FlyCommand());
 
         this.configCheck();
 

@@ -15,12 +15,12 @@ public class Shop {
     public static String[] shopUI = {
             "abcd     ",
             "         ",
-            "         "
+            "        0"
     };
 
     public static void openShop(Player player) {
         InventoryGui gui = new InventoryGui(HideandSeek.getPlugin(), null, config.getString("message.shop.title"), shopUI);
-        gui.setFiller(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1));
+        gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
         gui.addElement(new StaticGuiElement('a',
                 GameItems.getItem(SpecialItems.FLASH_POTION),
                 1,
@@ -60,6 +60,12 @@ public class Shop {
                 },
                 GameItems.getItem(SpecialItems.BATTERY_PACK).getItemMeta().getDisplayName(),
                 ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.battery_pack")
+        ));
+        gui.addElement(new StaticGuiElement('0',
+                new ItemStack(Material.DIAMOND, 1),
+                1,
+                click -> true,
+                "あなたのポイント: " + shopPoint.getScore(player).getScore()
         ));
         gui.show(player);
     }

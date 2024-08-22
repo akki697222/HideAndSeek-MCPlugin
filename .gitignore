@@ -112,3 +112,4 @@ buildNumber.properties
 # Common working directory
 run/
 /src/main/java/io/github/akki/hideandseek/compat/LucaServer.java
+/src/main/java/io/github/akki/hideandseek/compat/FlyCommand.java
