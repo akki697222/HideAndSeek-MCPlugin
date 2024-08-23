@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -150,14 +151,16 @@ public class HideandSeekEventListener implements Listener {
                 return;
             }
 
-            if (item.getType() == Material.RECOVERY_COMPASS && isPlayersInTeam(player, "hider")) {
+            if (item.getType() == Material.RECOVERY_COMPASS) {
                 ItemMeta meta = item.getItemMeta();
-                if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Seeker Searcher")) {
+                if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Player Searcher")) {
                     if (battery.getScore(player).getScore() > 0) {
-                        if (isTeamNearby(player, "seeker", config.getInt("item.seekersearcher.searches"))) {
-                            player.sendMessage(String.format(config.getString("message.item.seekersearcher.seekerfound"), config.getInt("item.seekersearcher.searches")));
+                        if (isPlayersInTeam(player, "hider") && isTeamNearby(player, "seeker", config.getInt("item.playersearcher.hiderSearches"))) {
+                            player.sendMessage(String.format(config.getString("message.item.playersearcher.seekerfound"), config.getInt("item.playersearcher.hiderSearches")));
+                        } else if (isPlayersInTeam(player, "seeker") && isTeamNearby(player, "hider", config.getInt("item.playersearcher.seekerSearches"))) {
+                            player.sendMessage(String.format(config.getString("message.item.playersearcher.hiderFound"), config.getInt("item.playersearcher.seekerSearches")));
                         } else {
-                            player.sendMessage(String.format(config.getString("message.item.seekersearcher.notfound"), config.getInt("item.seekersearcher.searches")));
+                            player.sendMessage(String.format(config.getString("message.item.playersearcher.notfound"), config.getInt("item.playersearcher.seekerSearches")));
                         }
                         battery.getScore(player).setScore(battery.getScore(player).getScore() - 1);
                     } else {
@@ -172,6 +175,18 @@ public class HideandSeekEventListener implements Listener {
                     battery.getScore(player).setScore(config.getInt("game.maxBattery"));
                     player.sendMessage(config.getString("message.game.useBattery"));
                     player.getInventory().remove(item);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void inventoryMoveEvent(InventoryMoveItemEvent event) {
+        if (isGameStarted || isCountdown) {
+            ItemMeta itemMeta = event.getItem().getItemMeta();
+            if (itemMeta != null) {
+                if (event.getItem().getType() == Material.LEATHER_CHESTPLATE) {
+                    event.setCancelled(true);
                 }
             }
         }

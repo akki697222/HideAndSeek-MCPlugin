@@ -10,7 +10,10 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static io.github.akki.hideandseek.HideandSeek.config;
 import static io.github.akki.hideandseek.HideandSeek.logger;
@@ -30,9 +33,10 @@ public class GameItems {
             case SEEKER_SEARCHER: {
                 ItemStack item = new ItemStack(Material.RECOVERY_COMPASS, amount);
                 ItemMeta meta = item.getItemMeta();
+                List<String> lores = new ArrayList<>(Arrays.asList(ChatColor.GRAY + "近くにプレイヤーがいるかどうか、見てみよう...", ChatColor.GRAY + "鬼の場合は逃げ、逃げの場合は鬼を、設定された半径の中で探索します。バッテリーを1消費します。"));
                 if (meta != null) {
-                    meta.setDisplayName("Seeker Searcher");
-                    meta.setLore(Collections.singletonList(ChatColor.GOLD + "近くに鬼がいるかどうか、見てみよう..."));
+                    meta.setDisplayName("Player Searcher");
+                    meta.setLore(lores);
 
                     item.setItemMeta(meta);
                 }

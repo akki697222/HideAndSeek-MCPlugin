@@ -35,11 +35,11 @@ public class Shop {
                 GameItems.getItem(SpecialItems.SEEKER_SEARCHER),
                 1,
                 click -> {
-                    buyEvent(player, GameItems.getItem(SpecialItems.SEEKER_SEARCHER), config.getInt("shop.amount.seekersearcher"));
+                    buyEvent(player, GameItems.getItem(SpecialItems.SEEKER_SEARCHER), config.getInt("shop.amount.playersearcher"));
                     return true;
                 },
                 GameItems.getItem(SpecialItems.SEEKER_SEARCHER).getItemMeta().getDisplayName(),
-                ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.seekersearcher")
+                ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.playersearcher")
         ));
         gui.addElement(new StaticGuiElement('c',
                 GameItems.getItem(SpecialItems.KNOCKBACK_STICK),

@@ -62,7 +62,7 @@ shop:
   amount:
     # 各種特殊アイテムの価格
     flash: 1
-    seekersearcher: 1
+    playersearcher: 1
     knockback_stick: 2
     battery_pack: 3
 
@@ -71,10 +71,11 @@ item:
   flash:
     state: disable
     duration: 10
-  seekersearcher:
+  playersearcher:
     state: disable
     # Seeker Searcherが捜索する範囲の半径
-    searches: 16
+    hiderSearches: 16
+    seekerSearches: 16
   knockback_stick:
     state: disable
     level: 8
@@ -104,9 +105,10 @@ event:
 
 message:
   item:
-    seekersearcher:
+    playersearcher:
       seekerfound: "半径%sブロック以内に鬼がいます！"
-      notfound: "半径%sブロック以内に鬼はいません。"
+      hiderFound: "半径%sブロック以内に逃げがいます！"
+      notfound: "半径%sブロック以内にはいません。"
     noBattery: "バッテリー切れです！"
   shop:
     title: "ショップ"

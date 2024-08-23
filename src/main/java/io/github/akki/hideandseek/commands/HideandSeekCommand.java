@@ -26,6 +26,11 @@ public class HideandSeekCommand implements CommandExecutor {
             return true;
         }
         if (Objects.equals(args[0], "start")) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (player.isOp()) {
+                    player.sendMessage(ChatColor.GOLD + "[DEBUG] " + ChatColor.RESET + sender.getName() + "さんがゲームを開始しました。");
+                }
+            }
             if (isGameStarted || isCountdown) {
                 sender.sendMessage(config.getString("message.command.hideandseek.alreadyStarted"));
             } else {

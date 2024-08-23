@@ -3,6 +3,7 @@ package io.github.akki.hideandseek.system;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.potion.PotionEffect;
@@ -83,6 +84,7 @@ public class Event {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (!Game.isPlayersInTeam(player, "spectator") && !Game.isPlayersInTeam(player, "visitor") && !Game.isPlayersInTeam(player, "dead")) {
                         player.teleport(locations.get(i));
+                        player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
                         i++;
                     }
                 }

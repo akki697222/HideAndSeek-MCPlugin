@@ -135,7 +135,7 @@ public class Game {
         Random random = new Random();
         List<Player> playerList = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if ((!isPlayersInTeam(player, "spectator") || !isPlayersInTeam(player, "visitor")) && isPlayersInTeam(player, "waiting")) {
+            if ((!isPlayersInTeam(player, "spectator") || !nextSpectator.contains(player) || !isPlayersInTeam(player, "visitor")) && isPlayersInTeam(player, "waiting")) {
                 playerList.add(player);
             }
         }
@@ -220,17 +220,21 @@ public class Game {
             if (!isPlayersInTeam(player, "spectator")) {
                 player.setGameMode(GameMode.ADVENTURE);
             }
+            if (isPlayersInTeam(player, "spectator")) {
+                player.setGameMode(GameMode.SPECTATOR);
+            }
             player.getInventory().clear();
             player.setAllowFlight(false);
             player.setFlying(false);
             battery.getScore(player).setScore(config.getInt("game.maxBattery"));
             if (isPlayersInTeam(player, "seeker")) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, config.getInt("game.countdown"), 255));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * config.getInt("game.countdown"), 255));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * config.getInt("game.countdown"), 255));
                 ItemStack leatherChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
                 LeatherArmorMeta meta = (LeatherArmorMeta) leatherChestplate.getItemMeta();
                 if (meta != null) {
                     meta.setColor(Color.RED);
+                    meta.setDisplayName("鬼の服");
                     leatherChestplate.setItemMeta(meta);
                 }
                 player.getInventory().setChestplate(leatherChestplate);
@@ -241,6 +245,16 @@ public class Game {
                 shopPoint.getScore(player).setScore(config.getInt("shop.hiderDefault"));
                 hiders++;
             }
+        }
+
+        for (Player player : nextSpectator) {
+            Team joinedTeam = scoreboard.getEntryTeam(player.getName());
+            if (joinedTeam != null) {
+                joinedTeam.removeEntry(player.getName());
+            }
+
+            player.setGameMode(GameMode.SPECTATOR);
+            spectator.addPlayer(player);
         }
     }
 
@@ -351,7 +365,7 @@ public class Game {
                 player.getInventory().addItem(GameItems.getItem(SpecialItems.FLASH_POTION));
             }
 
-            if (ConfigUtil.isEnabled(config, "item.seekersearcher.state") && isPlayersInTeam(player, "hider")) {
+            if (ConfigUtil.isEnabled(config, "item.playersearcher.state") && isPlayersInTeam(player, "hider")) {
                 player.getInventory().addItem(GameItems.getItem(SpecialItems.SEEKER_SEARCHER));
             }
 
