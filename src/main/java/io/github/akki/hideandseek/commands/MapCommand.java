@@ -1,16 +1,20 @@
 package io.github.akki.hideandseek.commands;
 
 import io.github.akki.hideandseek.system.map.MapManager;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 import static io.github.akki.hideandseek.HideandSeek.config;
+import static io.github.akki.hideandseek.HideandSeek.mapConfig;
 
 public class MapCommand implements CommandExecutor {
     @Override
@@ -37,6 +41,12 @@ public class MapCommand implements CommandExecutor {
             } else {
                 sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
                 return true;
+            }
+        } else if (args[0].equals("list")) {
+            sender.sendMessage(ChatColor.BOLD + "All Registered Maps");
+            for (String key : mapConfig.getConfigurationSection("maps").getKeys(false)) {
+                ConfigurationSection map = mapConfig.getConfigurationSection("maps." + key);
+                sender.sendMessage("ID: " + key + ", Title: " + map.getString("title") + ", SpawnLocation: X" + map.getInt("x") + " Y" + map.getInt("y") + " Z" + map.getInt("z") + ", MapTime: " + map.getInt("time") + "MapMode: " + map.getString("mode"));
             }
         }
         return true;

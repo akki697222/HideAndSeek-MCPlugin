@@ -6,7 +6,7 @@
 
   <groupId>io.github.akki</groupId>
   <artifactId>hideandseek</artifactId>
-  <version>BUILD.0024</version>
+  <version>BUILD.0029</version>
   <packaging>jar</packaging>
 
   <name>hideandseek</name>

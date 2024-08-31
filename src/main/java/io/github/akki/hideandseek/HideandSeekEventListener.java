@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -74,20 +75,13 @@ public class HideandSeekEventListener implements Listener {
 
                 dead.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
+                player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
                 if (isPlayersInTeam(killer, "seeker")) {
                     killer.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
                     killer.sendMessage(ChatColor.GREEN + String.format(config.getString("message.game.getPoint"), config.getInt("shop.seekersAdd")));
                     shopPoint.getScore(killer).setScore(shopPoint.getScore(killer).getScore() + config.getInt("shop.seekersAdd"));
                 }
-            } else if (!isPlayersInTeam(player, "seeker")) {
-                Team team = scoreboard.getEntryTeam(player.getName());
-                if (team != null) {
-                    team.removeEntry(player.getName());
-                }
-
-                dead.addPlayer(player);
-                player.setGameMode(GameMode.SPECTATOR);
-            } else if (isPlayersInTeam(player, "seeker") && cause == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
+            } else if (isPlayersInTeam(player, "seeker") && (cause == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION || cause == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)) {
                 Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
                     int respawns = config.getInt("game.respawn");
 
@@ -109,6 +103,7 @@ public class HideandSeekEventListener implements Listener {
 
                 dead.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
+                player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
             } else if (isPlayersInTeam(player, "seeker") && killer == null) {
                 Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
                     int respawns = config.getInt("game.respawn");
@@ -181,11 +176,11 @@ public class HideandSeekEventListener implements Listener {
     }
 
     @EventHandler
-    public void inventoryMoveEvent(InventoryMoveItemEvent event) {
+    public void inventoryClickEvent(InventoryClickEvent event) {
         if (isGameStarted || isCountdown) {
-            ItemMeta itemMeta = event.getItem().getItemMeta();
+            ItemMeta itemMeta = event.getCurrentItem().getItemMeta();
             if (itemMeta != null) {
-                if (event.getItem().getType() == Material.LEATHER_CHESTPLATE) {
+                if (event.getCurrentItem().getType() == Material.LEATHER_CHESTPLATE && itemMeta.getDisplayName().equals("鬼の服")) {
                     event.setCancelled(true);
                 }
             }

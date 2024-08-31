@@ -2,6 +2,7 @@ package io.github.akki.hideandseek.commands;
 
 import io.github.akki.hideandseek.HideandSeek;
 import io.github.akki.hideandseek.system.Game;
+import io.github.akki.hideandseek.system.map.MapManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
@@ -48,6 +50,17 @@ public class HideandSeekCommand implements CommandExecutor {
                         }
                     } else if (args.length >= 3) {
                         int argint;
+                        if (args.length >= 4) {
+                            Map<String, Object> map = MapManager.getMap(args[3]);
+                            if (map != null) {
+                                currentMap = map;
+                            } else {
+                                sender.sendMessage("Invalid Map Key(id): " + args[3] + " (Get list in command '/map list')");
+                                return true;
+                            }
+                        } else {
+                            currentMap = MapManager.selectRandomMap();
+                        }
                         try {
                             argint = Integer.parseInt(args[1]);
                         } catch (NumberFormatException e) {
@@ -65,6 +78,7 @@ public class HideandSeekCommand implements CommandExecutor {
                         } else {
                             sender.sendMessage(config.getString("message.command.hideandseek.overlimit"));
                         }
+
                     } else {
                         sender.sendMessage(config.getString("message.command.hideandseek.noargument"));
                         return true;

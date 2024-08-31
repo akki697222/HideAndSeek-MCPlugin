@@ -13,7 +13,7 @@ import static io.github.akki.hideandseek.HideandSeek.shopPoint;
 
 public class Shop {
     public static String[] shopUI = {
-            "abcd     ",
+            "abcdef   ",
             "         ",
             "        0"
     };
@@ -32,6 +32,26 @@ public class Shop {
                 ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.flash")
         ));
         gui.addElement(new StaticGuiElement('b',
+                GameItems.getItem(SpecialItems.SPEEDUP_POTION),
+                1,
+                click -> {
+                    buyEvent(player, GameItems.getItem(SpecialItems.SPEEDUP_POTION), config.getInt("shop.amount.speed_potion"));
+                    return true;
+                },
+                GameItems.getItem(SpecialItems.SPEEDUP_POTION).getItemMeta().getDisplayName(),
+                ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.speed_potion")
+        ));
+        gui.addElement(new StaticGuiElement('c',
+                GameItems.getItem(SpecialItems.JUMP_POTION),
+                1,
+                click -> {
+                    buyEvent(player, GameItems.getItem(SpecialItems.JUMP_POTION), config.getInt("shop.amount.jump_potion"));
+                    return true;
+                },
+                GameItems.getItem(SpecialItems.JUMP_POTION).getItemMeta().getDisplayName(),
+                ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.jump_potion")
+        ));
+        gui.addElement(new StaticGuiElement('d',
                 GameItems.getItem(SpecialItems.SEEKER_SEARCHER),
                 1,
                 click -> {
@@ -41,7 +61,7 @@ public class Shop {
                 GameItems.getItem(SpecialItems.SEEKER_SEARCHER).getItemMeta().getDisplayName(),
                 ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.playersearcher")
         ));
-        gui.addElement(new StaticGuiElement('c',
+        gui.addElement(new StaticGuiElement('e',
                 GameItems.getItem(SpecialItems.KNOCKBACK_STICK),
                 1,
                 click -> {
@@ -51,7 +71,7 @@ public class Shop {
                 GameItems.getItem(SpecialItems.KNOCKBACK_STICK).getItemMeta().getDisplayName(),
                 ChatColor.GRAY + "必要ポイント: " + config.getInt("shop.amount.knockback_stick")
         ));
-        gui.addElement(new StaticGuiElement('d',
+        gui.addElement(new StaticGuiElement('f',
                 GameItems.getItem(SpecialItems.BATTERY_PACK),
                 1,
                 click -> {

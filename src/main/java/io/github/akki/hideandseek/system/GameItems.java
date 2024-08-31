@@ -65,6 +65,32 @@ public class GameItems {
                 }
                 return item;
             }
+            case JUMP_POTION: {
+                ItemStack item = new ItemStack(Material.SPLASH_POTION, amount);
+                PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
+
+                if (potionMeta != null) {
+                    potionMeta.setDisplayName("レッドブル");
+                    potionMeta.setLore(Collections.singletonList("翼を授ける～"));
+                    potionMeta.setColor(Color.RED);
+                    potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.JUMP, 20 * config.getInt("item.jump_potion.duration"), 3), true);
+                    item.setItemMeta(potionMeta);
+                }
+                return item;
+            }
+            case SPEEDUP_POTION: {
+                ItemStack item = new ItemStack(Material.SPLASH_POTION, amount);
+                PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
+
+                if (potionMeta != null) {
+                    potionMeta.setDisplayName("ドーピング");
+                    potionMeta.setLore(Collections.singletonList("走れ！もっと早く！"));
+                    potionMeta.setColor(Color.BLUE);
+                    potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SPEED, 20 * config.getInt("item.speed_potion.duration"), 3), true);
+                    item.setItemMeta(potionMeta);
+                }
+                return item;
+            }
             case BATTERY_PACK: {
                 ItemStack item = new ItemStack(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE, amount);
                 ItemMeta meta = item.getItemMeta();

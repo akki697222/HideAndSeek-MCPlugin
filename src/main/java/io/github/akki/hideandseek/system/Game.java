@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
+import org.yaml.snakeyaml.util.ArrayStack;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -168,7 +169,6 @@ public class Game {
 
     public static void startCountdown() {
         reloadAllConfig();
-        currentMap = MapManager.selectRandomMap();
         if (currentMap == null) {
             throw(new NullPointerException("Invalid Map: Returned map is null."));
         }
@@ -228,7 +228,6 @@ public class Game {
             player.setFlying(false);
             battery.getScore(player).setScore(config.getInt("game.maxBattery"));
             if (isPlayersInTeam(player, "seeker")) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * config.getInt("game.countdown"), 255));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * config.getInt("game.countdown"), 255));
                 ItemStack leatherChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
                 LeatherArmorMeta meta = (LeatherArmorMeta) leatherChestplate.getItemMeta();
@@ -406,7 +405,7 @@ public class Game {
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.setGameMode(GameMode.SPECTATOR);
-            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1.0F, 1.0F);
+            player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.0F);
             player.getActivePotionEffects().forEach(effect ->
                     player.removePotionEffect(effect.getType())
             );
@@ -631,6 +630,8 @@ public class Game {
         timerBossBar.addPlayer(player);
         countdownBossBar.addPlayer(player);
         battery.getScore(player).setScore(config.getInt("game.maxBattery"));
+        shopPoint.getScore(player).setScore(0);
+        player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
         if (isGameStarted) {
             if (isPlayersInTeam(player, "seeker")) {
                 seeker.addPlayer(player);
@@ -638,12 +639,16 @@ public class Game {
             } else {
                 spectator.addPlayer(player);
                 player.setGameMode(GameMode.SPECTATOR);
-                player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
+
+                int x = (int) currentMap.get("x");
+                int y = (int) currentMap.get("y");
+                int z = (int) currentMap.get("z");
+
+                player.teleport(new Location(Bukkit.getWorld("world"), x, y, z));
             }
         } else {
             visitor.addPlayer(player);
             player.setGameMode(GameMode.ADVENTURE);
-            player.teleport(new Location(Bukkit.getWorld("world"), config.getInt("game.lobbyPos.x"), config.getInt("game.lobbyPos.y"), config.getInt("game.lobbyPos.z")));
         }
     }
 

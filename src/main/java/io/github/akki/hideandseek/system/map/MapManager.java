@@ -4,10 +4,7 @@ import io.github.akki.hideandseek.system.Game;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static io.github.akki.hideandseek.HideandSeek.*;
 
@@ -31,6 +28,30 @@ public class MapManager {
             mapConfig.load(mapConfFile);
         } catch (Exception e) {
             logger.warning("Failed to load config\n" + e);
+        }
+    }
+
+    public static Map<String, Object> getMap(String key) {
+        ConfigurationSection selectedMap = mapConfig.getConfigurationSection("maps." + key);
+
+        if (selectedMap != null) {
+            Map<String, Object> mapInfo = new HashMap<>();
+            mapInfo.put("title", selectedMap.getString("title"));
+            mapInfo.put("x", selectedMap.getInt("x"));
+            mapInfo.put("y", selectedMap.getInt("y"));
+            mapInfo.put("z", selectedMap.getInt("z"));
+
+            mapInfo.put("time", selectedMap.getInt("time"));
+            mapInfo.put("mode", selectedMap.getString("mode"));
+            mapInfo.put("credit", selectedMap.getString("credit"));
+
+            if (Game.parseMode(selectedMap.getString("mode")) != Game.getMode()) {
+                return selectRandomMap();
+            }
+
+            return mapInfo;
+        } else {
+            return null;
         }
     }
 

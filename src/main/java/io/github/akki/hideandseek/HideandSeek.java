@@ -16,11 +16,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.logging.Logger;
 
 public final class HideandSeek extends JavaPlugin {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(HideandSeek.class);
     public static Plugin hideandseekPlugin;
     public static final Logger logger = Logger.getLogger("Hideandseek");
     public static Timer timer;
@@ -51,7 +53,8 @@ public final class HideandSeek extends JavaPlugin {
         try {
             mapConfig.load(mapConfFile);
         } catch (Exception e) {
-            logger.warning("Failed to load config\n" + e);
+            logger.warning("Failed to reload config.");
+            logger.warning(e.toString());
         }
     }
 
@@ -202,7 +205,7 @@ public final class HideandSeek extends JavaPlugin {
 
     public void configCheck() {
         if (config.getInt("lobby.minStart") <= 1) {
-            new InvalidConfigurationException("lobby.minStart "); //TODO メッセージ
+            new InvalidConfigurationException("lobby.minStart.notenough"); //TODO メッセージ
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
